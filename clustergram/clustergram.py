@@ -12,6 +12,7 @@ Original idea is by Matthias Schonlau - http://www.schonlau.net/clustergram.html
 
 
 def _kmeans_sklearn(k_range, data, pca_weighted=True, **kwargs):
+    """Use scikit-learn KMeans"""
     try:
         from sklearn.cluster import KMeans
         from sklearn.decomposition import PCA
@@ -35,6 +36,7 @@ def _kmeans_sklearn(k_range, data, pca_weighted=True, **kwargs):
 
 
 def _kmeans_cuml(k_range, data, pca_weighted=True, **kwargs):
+    """Use cuML KMeans"""
     try:
         from cuml import KMeans, PCA
         from cudf import DataFrame
@@ -49,7 +51,10 @@ def _kmeans_cuml(k_range, data, pca_weighted=True, **kwargs):
         results = KMeans(n_clusters=n, **kwargs).fit(data)
         cluster = results.labels_
         if pca_weighted:
-            means = results.cluster_centers_.values.dot(pca.components_.values[0])
+            if isinstance(results.cluster_centers_, DataFrame):
+                means = results.cluster_centers_.values.dot(pca.components_.values[0])
+            else:
+                means = results.cluster_centers_.dot(pca.components_[0])
             df[n] = cp.take(means, cluster)
         else:
             means = results.cluster_centers_.mean(axis=1)
@@ -96,7 +101,7 @@ def plot_clustergram(
     backend,
     ax=None,
     size=1,
-    linewidth=1,
+    linewidth=0.1,
     cluster_style=None,
     line_style=None,
     pca_weighted=True,

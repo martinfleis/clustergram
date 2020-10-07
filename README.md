@@ -36,7 +36,7 @@ from clustergram import clustergram
 clustergram(data, range(1, 8))
 ```
 
-![Default clustergram](doc/default.png)
+![Default clustergram](doc/_static/default.png)
 
 ## Styling
 
@@ -58,7 +58,7 @@ clustergram(
     line_style={"color": "red", "linestyle": "-."},
 )
 ```
-![Colored clustergram](doc/colors.png)
+![Colored clustergram](doc/_static/colors.png)
 
 ## Mean options
 
@@ -68,13 +68,13 @@ On the `y` axis, a clustergram can use mean values as in the original paper by M
 fig, ax = plt.subplots(figsize=(12, 8))
 clustergram(data, range(1, 8), ax=ax, pca_weighted=True)
 ```
-![Default clustergram](doc/pca_true.png)
+![Default clustergram](doc/_static/pca_true.png)
 
 ```python
 fig, ax = plt.subplots(figsize=(12, 8))
 clustergram(data, range(1, 8), ax=ax, pca_weighted=False)
 ```
-![Default clustergram](doc/pca_false.png)
+![Default clustergram](doc/_static/pca_false.png)
 
 
 ## Scikit-learn and RAPIDS cuML backends

@@ -1,0 +1,61 @@
+a, p a code {
+    color: #b9634d;
+}
+
+.sidebar .toctree-l1 a.current {
+    border-left-color: #b9634d;
+}
+
+.navbar-brand {
+    height: 300px!important;
+}
+
+.active {
+    color: #b9634d!important;
+}
+
+.toc-entry>.nav-link.active {
+    border-left: 2px solid #b9634d;
+}
+
+.navbar-nav>.active>.nav-link {
+    font-weight: 600;
+    color: #b9634d!important;
+}
+
+.bd-sidebar .nav>.active:hover>a, .bd-sidebar .nav>.active>a {
+    font-weight: 600;
+    color: #b9634d;
+}
+
+.bd-sidebar .nav>li>a:hover {
+    color: black;
+}
+
+.bd-sidebar .nav>li>ul>.active>a {
+    color: black;
+}
+
+.alert-info a {
+    color: #b9634d;
+}
+
+.reference a {
+    color: #b9634d;
+}
+
+h1, h2 {
+    color: black;
+}
+
+body {
+    padding-top: 0!important;
+}
+
+.bd-sidebar {
+    top: 10px!important;
+}
+
+.bd-toc {
+    top: 10px!important;
+}

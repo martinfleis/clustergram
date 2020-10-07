@@ -43,10 +43,7 @@ clustergram(data, range(1, 8))
 `clustergram` returns matplotlib axis and can be fully customised as any other matplotlib plot.
 
 ```python
-import matplotlib.pyplot as plt
-
 seaborn.set(style='whitegrid')
-fig, ax = plt.subplots(figsize=(12, 8))
 
 clustergram(
     data,
@@ -56,6 +53,7 @@ clustergram(
     linewidth=0.05,
     cluster_style={"color": "lightblue", "edgecolor": "black"},
     line_style={"color": "red", "linestyle": "-."},
+    figsize=(12, 8),
 )
 ```
 ![Colored clustergram](doc/_static/colors.png)
@@ -65,14 +63,12 @@ clustergram(
 On the `y` axis, a clustergram can use mean values as in the original paper by Matthias Schonlau or PCA weighted mean values as in the implementation by Tal Galili.
 
 ```python
-fig, ax = plt.subplots(figsize=(12, 8))
-clustergram(data, range(1, 8), ax=ax, pca_weighted=True)
+clustergram(data, range(1, 8), ax=ax, pca_weighted=True, figsize=(12, 8))
 ```
 ![Default clustergram](doc/_static/pca_true.png)
 
 ```python
-fig, ax = plt.subplots(figsize=(12, 8))
-clustergram(data, range(1, 8), ax=ax, pca_weighted=False)
+clustergram(data, range(1, 8), ax=ax, pca_weighted=False, figsize=(12, 8))
 ```
 ![Default clustergram](doc/_static/pca_false.png)
 

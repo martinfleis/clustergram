@@ -61,10 +61,7 @@ any other matplotlib plot.
 
 .. code:: python
 
-   import matplotlib.pyplot as plt
-
    seaborn.set(style='whitegrid')
-   fig, ax = plt.subplots(figsize=(12, 8))
 
    clustergram(
        data,
@@ -74,6 +71,7 @@ any other matplotlib plot.
        linewidth=0.05,
        cluster_style={"color": "lightblue", "edgecolor": "black"},
        line_style={"color": "red", "linestyle": "-."},
+       figsize=(12, 8)
    )
 
 |Colored clustergram|
@@ -87,15 +85,13 @@ implementation by Tal Galili.
 
 .. code:: python
 
-   fig, ax = plt.subplots(figsize=(12, 8))
-   clustergram(data, range(1, 8), ax=ax, pca_weighted=True)
+   clustergram(data, range(1, 8), ax=ax, pca_weighted=True, figsize=(12, 8))
 
 |image1|
 
 .. code:: python
 
-   fig, ax = plt.subplots(figsize=(12, 8))
-   clustergram(data, range(1, 8), ax=ax, pca_weighted=False)
+   clustergram(data, range(1, 8), ax=ax, pca_weighted=False, figsize=(12, 8))
 
 |image2|
 

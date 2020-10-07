@@ -11,7 +11,7 @@ Original idea is by Matthias Schonlau - http://www.schonlau.net/clustergram.html
 """
 
 
-def _kmeans_sklearn(k_range, data, pca_weighted=True, **kwargs):
+def _kmeans_sklearn(data, k_range, pca_weighted=True, **kwargs):
     """Use scikit-learn KMeans"""
     try:
         from sklearn.cluster import KMeans
@@ -35,7 +35,7 @@ def _kmeans_sklearn(k_range, data, pca_weighted=True, **kwargs):
     return df
 
 
-def _kmeans_cuml(k_range, data, pca_weighted=True, **kwargs):
+def _kmeans_cuml(data, k_range, pca_weighted=True, **kwargs):
     """Use cuML KMeans"""
     try:
         from cuml import KMeans, PCA
@@ -62,7 +62,7 @@ def _kmeans_cuml(k_range, data, pca_weighted=True, **kwargs):
     return df
 
 
-def cluster_means(k_range, data, backend, pca_weighted=True, **kwargs):
+def cluster_means(data, k_range, backend, pca_weighted=True, **kwargs):
     """
     Compute (weighted) means of clusters.
 
@@ -89,9 +89,9 @@ def cluster_means(k_range, data, backend, pca_weighted=True, **kwargs):
     """
 
     if backend == "sklearn":
-        return _kmeans_sklearn(k_range, data, pca_weighted=pca_weighted, **kwargs)
+        return _kmeans_sklearn(data, k_range, pca_weighted=pca_weighted, **kwargs)
     if backend == "cuML":
-        return _kmeans_cuml(k_range, data, pca_weighted=pca_weighted, **kwargs)
+        return _kmeans_cuml(data, k_range, pca_weighted=pca_weighted, **kwargs)
     raise ValueError(f'"{backend}" is not supported backend. Use "sklearn" or "cuML".')
 
 
@@ -105,6 +105,7 @@ def plot_clustergram(
     cluster_style=None,
     line_style=None,
     pca_weighted=True,
+    figsize=None,
 ):
     """
     Generate clustergram plot based on cluster centre mean values.
@@ -132,6 +133,9 @@ def plot_clustergram(
     line_style : dict (default None)
         Style options to be passed on to branches, such
         as ``color``, ``linewidth``, ``edgecolor`` or ``alpha``.
+    figsize : tuple of integers (default None)
+        Size of the resulting matplotlib.figure.Figure. If the argument
+        axes is given explicitly, figsize is ignored.
     **kwargs
         Additional arguments passed to the KMeans object,
          e.g. ``random_state``.
@@ -144,7 +148,7 @@ def plot_clustergram(
     if ax is None:
         import matplotlib.pyplot as plt
 
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=figsize)
 
     if cluster_style is None:
         cluster_style = {}
@@ -225,6 +229,7 @@ def clustergram(
     linewidth=0.1,
     cluster_style=None,
     line_style=None,
+    figsize=None,
     **kwargs,
 ):
     """
@@ -258,6 +263,9 @@ def clustergram(
     line_style : dict (default None)
         Style options to be passed on to branches, such
         as ``color``, ``linewidth``, ``edgecolor`` or ``alpha``.
+    figsize : tuple of integers (default None)
+        Size of the resulting matplotlib.figure.Figure. If the argument
+        axes is given explicitly, figsize is ignored.
     **kwargs
         Additional arguments passed to the KMeans object,
          e.g. ``random_state``.
@@ -272,8 +280,11 @@ def clustergram(
     ax : matplotlib axis instance
 
     """
+
+    if "figsize" in kwargs:
+        figsize
     clg = cluster_means(
-        k_range, data, pca_weighted=pca_weighted, backend=backend, **kwargs
+        data, k_range, pca_weighted=pca_weighted, backend=backend, **kwargs
     )
     return plot_clustergram(
         clg,
@@ -285,4 +296,5 @@ def clustergram(
         linewidth=linewidth,
         cluster_style=cluster_style,
         line_style=line_style,
+        figsize=figsize,
     )

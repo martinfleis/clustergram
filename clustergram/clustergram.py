@@ -10,7 +10,51 @@ Original idea is by Matthias Schonlau - http://www.schonlau.net/clustergram.html
 
 """
 
-import numpy as np
+
+def _kmeans_sklearn(k_range, data, pca_weighted=True, **kwargs):
+    try:
+        from sklearn.cluster import KMeans
+        from sklearn.decomposition import PCA
+        from pandas import DataFrame
+        import numpy as np
+    except ImportError:
+        raise ImportError("scikit-learn package is required to use `sklearn` backend.")
+
+    df = DataFrame()
+    if pca_weighted:
+        pca = PCA(1).fit(data)
+    for n in k_range:
+        results = KMeans(n_clusters=n, **kwargs).fit(data)
+        cluster = results.labels_
+        if pca_weighted:
+            means = results.cluster_centers_.dot(pca.components_[0])
+        else:
+            means = np.mean(results.cluster_centers_, axis=1)
+        df[n] = np.take(means, cluster)
+    return df
+
+
+def _kmeans_cuml(k_range, data, pca_weighted=True, **kwargs):
+    try:
+        from cuml import KMeans, PCA
+        from cudf import DataFrame
+        import cupy as cp
+    except ImportError:
+        raise ImportError("cuML package is required to use `cuML` backend.")
+
+    df = DataFrame()
+    if pca_weighted:
+        pca = PCA(1).fit(data)
+    for n in k_range:
+        results = KMeans(n_clusters=n, **kwargs).fit(data)
+        cluster = results.labels_
+        if pca_weighted:
+            means = results.cluster_centers_.values.dot(pca.components_.values[0])
+            df[n] = cp.take(means, cluster)
+        else:
+            means = results.cluster_centers_.mean(axis=1)
+            df[n] = means.take(cluster).to_array()
+    return df
 
 
 def cluster_means(k_range, data, backend, pca_weighted=True, **kwargs):
@@ -40,42 +84,16 @@ def cluster_means(k_range, data, backend, pca_weighted=True, **kwargs):
     """
 
     if backend == "sklearn":
-        try:
-            from sklearn.cluster import KMeans
-            from sklearn.decomposition import PCA
-            from pandas import DataFrame
-        except ImportError:
-            raise ImportError(
-                f"scikit-learn package is required to use {backend} backend."
-            )
-    elif backend == "cuML":
-        try:
-            from cuml import KMeans, PCA
-            from cudf import DataFrame
-        except ImportError:
-            raise ImportError(f"cuML package is required to use {backend} backend.")
-    else:
-        raise ValueError(
-            f'"{backend}" is not supported backend. Use "sklearn" or "cuML".'
-        )
-
-    df = DataFrame()
-    if pca_weighted:
-        pca = PCA(1).fit(data)
-    for n in k_range:
-        results = KMeans(n_clusters=n, **kwargs).fit(data)
-        cluster = results.labels_
-        if pca_weighted:
-            means = results.cluster_centers_.dot(pca.components_[0])
-        else:
-            means = np.mean(results.cluster_centers_, axis=1)
-        df[n] = np.take(means, cluster)
-    return df
+        return _kmeans_sklearn(k_range, data, pca_weighted=pca_weighted, **kwargs)
+    if backend == "cuML":
+        return _kmeans_cuml(k_range, data, pca_weighted=pca_weighted, **kwargs)
+    raise ValueError(f'"{backend}" is not supported backend. Use "sklearn" or "cuML".')
 
 
 def plot_clustergram(
     df,
     k_range,
+    backend,
     ax=None,
     size=1,
     linewidth=1,
@@ -92,6 +110,9 @@ def plot_clustergram(
         DataFrame with (weighted) means of clusters.
     k_range : iterable
         iterable of integer values to be tested as k.
+    backend : string ('sklearn' or 'cuML', default 'sklearn')
+        Whether to use `sklearn`'s implementation of KMeans and PCA or `cuML` version.
+        Sklearn does computation on CPU, cuML on GPU.
     ax : matplotlib.pyplot.Artist (default None)
         matplotlib axis on which to draw the plot
     size : float (default 1)
@@ -136,29 +157,50 @@ def plot_clustergram(
     for i in k_range:
         cl = df[i].value_counts()
 
-        ax.scatter(
-            [i] * i,
-            [cl.index],
-            cl * size,
-            zorder=cl_zorder,
-            color=cl_c,
-            edgecolor=cl_ec,
-            linewidth=cl_lw,
-            **cluster_style,
-        )
+        if backend == "sklearn":
+            ax.scatter(
+                [i] * i,
+                [cl.index],
+                cl * size,
+                zorder=cl_zorder,
+                color=cl_c,
+                edgecolor=cl_ec,
+                linewidth=cl_lw,
+                **cluster_style,
+            )
+        else:
+            ax.scatter(
+                [i] * i,
+                cl.index.to_array(),
+                (cl * size).to_array(),
+                zorder=cl_zorder,
+                color=cl_c,
+                edgecolor=cl_ec,
+                linewidth=cl_lw,
+                **cluster_style,
+            )
 
         try:
-            sub = df.groupby([i, i + 1]).count().reset_index()[[i, i + 1, "count"]]
-            for n in range(len(sub)):
-                sub.drop(columns="count").iloc[n].plot(
-                    ax=ax,
-                    linewidth=sub["count"].iloc[n] * linewidth,
+            if backend == "sklearn":
+                sub = df.groupby([i, i + 1]).count().reset_index()[[i, i + 1, "count"]]
+            else:
+                sub = (
+                    df.groupby([i, i + 1])
+                    .count()
+                    .reset_index()[[i, i + 1, "count"]]
+                    .to_pandas()
+                )
+            for r in sub.itertuples():
+                ax.plot(
+                    [i, i + 1],
+                    [r[1], r[2]],
+                    linewidth=r[3] * linewidth,
                     color=l_c,
                     zorder=l_zorder,
                     solid_capstyle=solid_capstyle,
                     **line_style,
                 )
-        except KeyError:
+        except (KeyError, ValueError):
             pass
     if pca_weighted:
         ax.set_ylabel("PCA weighted mean of the clusters")
@@ -231,6 +273,7 @@ def clustergram(
     return plot_clustergram(
         clg,
         k_range,
+        backend,
         ax=ax,
         pca_weighted=pca_weighted,
         size=size,

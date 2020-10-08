@@ -1,5 +1,7 @@
 # Clustergram
 
+![logo clustergram](doc/_static/logo.svg)
+
 ## Visualization and diagnostics for cluster analysis
 
 Clustergram is a diagram proposed by Matthias Schonlau in his paper *[The clustergram: A graph for visualizing hierarchical and nonhierarchical cluster analyses](https://journals.sagepub.com/doi/10.1177/1536867X0200200405)*.

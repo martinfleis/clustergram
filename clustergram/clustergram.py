@@ -19,7 +19,9 @@ def _kmeans_sklearn(data, k_range, pca_weighted=True, **kwargs):
         from pandas import DataFrame
         import numpy as np
     except ImportError:
-        raise ImportError("scikit-learn package is required to use `sklearn` backend.")
+        raise ImportError(
+            "scikit-learn, pandas and numpy are required to use `sklearn` backend."
+        )
 
     df = DataFrame()
     if pca_weighted:
@@ -42,7 +44,9 @@ def _kmeans_cuml(data, k_range, pca_weighted=True, **kwargs):
         from cudf import DataFrame
         import cupy as cp
     except ImportError:
-        raise ImportError("cuML package is required to use `cuML` backend.")
+        raise ImportError(
+            "cuML, cuDF and cupy packages are required to use `cuML` backend."
+        )
 
     df = DataFrame()
     if pca_weighted:
@@ -62,7 +66,7 @@ def _kmeans_cuml(data, k_range, pca_weighted=True, **kwargs):
     return df
 
 
-def cluster_means(data, k_range, backend, pca_weighted=True, **kwargs):
+def cluster_means(data, k_range, backend, method="kmeans", pca_weighted=True, **kwargs):
     """
     Compute (weighted) means of clusters.
 
@@ -73,11 +77,14 @@ def cluster_means(data, k_range, backend, pca_weighted=True, **kwargs):
         numpy.array, pandas.DataFrame or their RAPIDS counterparts.
     k_range : iterable
         iterable of integer values to be tested as k.
-    pca_weighted : bool (default True)
-        Whether use PCA weighted mean of clusters or standard mean of clusters.
     backend : string ('sklearn' or 'cuML', default 'sklearn')
         Whether to use `sklearn`'s implementation of KMeans and PCA or `cuML` version.
         Sklearn does computation on CPU, cuML on GPU.
+    method : string ('kmeans' is only supported now)
+        Clustering method. Only supported is currently ``kmeans``.
+    pca_weighted : bool (default True)
+        Whether use PCA weighted mean of clusters or standard mean of clusters.
+
     **kwargs
         Additional arguments passed to the KMeans object,
          e.g. ``random_state``.
@@ -88,11 +95,18 @@ def cluster_means(data, k_range, backend, pca_weighted=True, **kwargs):
 
     """
 
-    if backend == "sklearn":
-        return _kmeans_sklearn(data, k_range, pca_weighted=pca_weighted, **kwargs)
-    if backend == "cuML":
-        return _kmeans_cuml(data, k_range, pca_weighted=pca_weighted, **kwargs)
-    raise ValueError(f'"{backend}" is not supported backend. Use "sklearn" or "cuML".')
+    if method == "kmeans":
+        if backend == "sklearn":
+            return _kmeans_sklearn(data, k_range, pca_weighted=pca_weighted, **kwargs)
+        if backend == "cuML":
+            return _kmeans_cuml(data, k_range, pca_weighted=pca_weighted, **kwargs)
+        raise ValueError(
+            f'"{backend}" is not a supported backend. Use "sklearn" or "cuML".'
+        )
+    else:
+        raise ValueError(
+            f'"{method}" is not a supported method. Only "kmeans" is supported now.'
+        )
 
 
 def plot_clustergram(
@@ -222,8 +236,9 @@ def plot_clustergram(
 def clustergram(
     data,
     k_range,
-    pca_weighted=True,
     backend="sklearn",
+    method="kmeans",
+    pca_weighted=True,
     ax=None,
     size=1,
     linewidth=0.1,
@@ -244,11 +259,13 @@ def clustergram(
         numpy.array, pandas.DataFrame or their RAPIDS counterparts.
     k_range : iterable
         iterable of integer values to be tested as k.
-    pca_weighted : bool (default True)
-        Whether use PCA weighted mean of clusters or standard mean of clusters.
     backend : string ('sklearn' or 'cuML', default 'sklearn')
         Whether to use `sklearn`'s implementation of KMeans and PCA or `cuML` version.
         Sklearn does computation on CPU, cuML on GPU.
+    method : string ('kmeans' is only supported now)
+        Clustering method. Only supported is currently ``kmeans``.
+    pca_weighted : bool (default True)
+        Whether use PCA weighted mean of clusters or standard mean of clusters.
     ax : matplotlib.pyplot.Artist (default None)
         matplotlib axis on which to draw the plot
     size : float (default 1)
@@ -284,7 +301,12 @@ def clustergram(
     if "figsize" in kwargs:
         figsize
     clg = cluster_means(
-        data, k_range, pca_weighted=pca_weighted, backend=backend, **kwargs
+        data,
+        k_range,
+        pca_weighted=pca_weighted,
+        backend=backend,
+        method="kmeans",
+        **kwargs,
     )
     return plot_clustergram(
         clg,

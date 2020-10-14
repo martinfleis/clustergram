@@ -19,3 +19,5 @@ log
 .vscode/
 
 _build
+
+coverage.xml

@@ -161,7 +161,7 @@ class Clustergram:
         self,
         ax=None,
         size=1,
-        linewidth=0.1,
+        linewidth=1,
         cluster_style=None,
         line_style=None,
         figsize=None,
@@ -176,10 +176,10 @@ class Clustergram:
             matplotlib axis on which to draw the plot
         size : float (default 1)
             multiplier of the size of a cluster centre indication. Size is determined as
-            the count of observations in a cluster multiplied by ``size``.
-        linewidth : float (default .1)
+            ``500 / count`` of observations in a cluster multiplied by ``size``.
+        linewidth : float (default 1)
             multiplier of the linewidth of a branch. Line width is determined as
-            the count of observations in a branch multiplied by `linewidth`.
+            ``50 / count`` of observations in a branch multiplied by `linewidth`.
         cluster_style : dict (default None)
             Style options to be passed on to the cluster centre plot, such
             as ``color``, ``linewidth``, ``edgecolor`` or ``alpha``.
@@ -226,7 +226,7 @@ class Clustergram:
                 ax.scatter(
                     [i] * i,
                     [cl.index],
-                    cl * size,
+                    cl * ((500 / len(self.means)) * size),
                     zorder=cl_zorder,
                     color=cl_c,
                     edgecolor=cl_ec,
@@ -237,7 +237,7 @@ class Clustergram:
                 ax.scatter(
                     [i] * i,
                     cl.index.to_array(),
-                    (cl * size).to_array(),
+                    (cl * ((500 / len(self.means)) * size)).to_array(),
                     zorder=cl_zorder,
                     color=cl_c,
                     edgecolor=cl_ec,
@@ -256,7 +256,7 @@ class Clustergram:
                     ax.plot(
                         [i, i + 1],
                         [r[1], r[2]],
-                        linewidth=r[3] * linewidth,
+                        linewidth=r[3] * ((50 / len(self.means)) * linewidth),
                         color=l_c,
                         zorder=l_zorder,
                         solid_capstyle=solid_capstyle,

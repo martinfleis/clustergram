@@ -53,7 +53,7 @@ seaborn.set(style='whitegrid')
 cgram.plot(
     ax=ax,
     size=0.5,
-    linewidth=0.05,
+    linewidth=0.5,
     cluster_style={"color": "lightblue", "edgecolor": "black"},
     line_style={"color": "red", "linestyle": "-."},
     figsize=(12, 8)

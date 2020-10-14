@@ -1,0 +1,15 @@
+name: test
+channels:
+  - rapidsai
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - rapids
+  - cudatoolkit
+  - sklearn
+  - pytest
+  - pandas
+  - numpy
+  - matplotlib

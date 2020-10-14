@@ -1,0 +1,42 @@
+name: Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron:  '0 * * * *'
+
+jobs:
+  Test:
+    name: Test clustergram
+    runs-on: ubuntu-18.04
+    
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Conda
+        uses: conda-incubator/setup-miniconda@v1
+        with:
+          auto-update-conda: true
+          auto-activate-base: false
+          activate-environment: test
+          environment-file: ci/envs/latest.yaml
+
+      - name: Install clustergram
+        shell: bash -l {0}
+        run: python setup.py install
+
+      - name: Check environment
+        shell: bash -l {0}
+        run: |
+          conda info
+          conda list
+
+      - name: Test clustergram
+        shell: bash -l {0}
+        run: |
+          pytest -v --color=yes --cov-config .coveragerc --cov=momepy --cov-append --cov-report term-missing --cov-report xml .
+
+      - uses: codecov/codecov-action@v1

@@ -1,6 +1,6 @@
 # Clustergram
 
-![logo clustergram](doc/_static/logo.svg)
+![logo clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/logo.svg)
 
 ## Visualization and diagnostics for cluster analysis
 
@@ -41,7 +41,7 @@ cgram.fit(data)
 cgram.plot()
 ```
 
-![Default clustergram](doc/_static/default.png)
+![Default clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/default.png)
 
 ## Styling
 
@@ -59,7 +59,7 @@ cgram.plot(
     figsize=(12, 8)
 )
 ```
-![Colored clustergram](doc/_static/colors.png)
+![Colored clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/colors.png)
 
 ## Mean options
 
@@ -70,14 +70,14 @@ cgram = Clustergram(range(1, 8), pca_weighted=True)
 cgram.fit(data)
 cgram.plot(figsize=(12, 8))
 ```
-![Default clustergram](doc/_static/pca_true.png)
+![Default clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/pca_true.png)
 
 ```python
 cgram = Clustergram(range(1, 8), pca_weighted=False)
 cgram.fit(data)
 cgram.plot(figsize=(12, 8))
 ```
-![Default clustergram](doc/_static/pca_false.png)
+![Default clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/pca_false.png)
 
 
 ## Scikit-learn and RAPIDS cuML backends
@@ -111,12 +111,12 @@ cgram = Clustergram(range(1, 20))
 cgram.fit(data)
 cgram.plot(figsize=(12, 8))
 ```
-![Long clustergram](doc/_static/20_clusters.png)
+![Long clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/20_clusters.png)
 
 ```python
 cgram.plot(k_range=range(3, 10), figsize=(12, 8))
 ```
-![Limited clustergram](doc/_static/limited_plot.png)
+![Limited clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/limited_plot.png)
 
 ## Saving clustergram
 

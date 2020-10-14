@@ -15,28 +15,27 @@ jobs:
     
     steps:
       - uses: actions/checkout@v2
-
-      - name: Setup Conda
-        uses: conda-incubator/setup-miniconda@v1
-        with:
-          auto-update-conda: true
-          auto-activate-base: false
-          activate-environment: test
-          environment-file: ci/envs/latest.yaml
-
-      - name: Install clustergram
-        shell: bash -l {0}
-        run: python setup.py install
-
-      - name: Check environment
+      - name: Install micromamba
+        run: |
+          wget -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba --strip-components=1
+          ./micromamba shell init -s bash -p ~/micromamba
+          mkdir -p ~/micromamba/pkgs/
+      - name: install deps
         shell: bash -l {0}
         run: |
-          conda info
-          conda list
-
+          export MAMBA_ROOT_PREFIX=~/micromamba
+          export MAMBA_EXE=$(pwd)/micromamba
+          . $MAMBA_ROOT_PREFIX/etc/profile.d/mamba.sh
+          ./micromamba create -f ci/envs/latest.yaml -y
+      
       - name: Test clustergram
         shell: bash -l {0}
         run: |
-          pytest -v --color=yes --cov-config .coveragerc --cov=clustergram --cov-append --cov-report term-missing --cov-report xml .
-
+          export MAMBA_ROOT_PREFIX=~/micromamba
+          export MAMBA_EXE=$(pwd)/micromamba
+          . $MAMBA_ROOT_PREFIX/etc/profile.d/mamba.sh
+          micromamba activate test
+          python setup.py install
+          pytest -v --color=yes --cov-config .coveragerc --cov=momepy --cov-append --cov-report term-missing --cov-report xml .
+          
       - uses: codecov/codecov-action@v1

@@ -165,6 +165,7 @@ class Clustergram:
         cluster_style=None,
         line_style=None,
         figsize=None,
+        k_range=None,
     ):
         """
         Generate clustergram plot based on cluster centre mean values.
@@ -188,6 +189,9 @@ class Clustergram:
         figsize : tuple of integers (default None)
             Size of the resulting matplotlib.figure.Figure. If the argument
             axes is given explicitly, figsize is ignored.
+        k_range : iterable (default None)
+            iterable of integer values to be plotted. In none, ``Clustergram.k_range``
+            will be used. Has to be a substet of ``Clustergram.k_range``.
 
         Returns
         -------
@@ -212,7 +216,10 @@ class Clustergram:
         l_zorder = line_style.pop("zorder", 1)
         solid_capstyle = line_style.pop("solid_capstyle", "butt")
 
-        for i in self.k_range:
+        if k_range is None:
+            k_range = self.k_range
+
+        for i in k_range:
             cl = self.means[i].value_counts()
 
             if self.backend == "sklearn":

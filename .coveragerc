@@ -1,0 +1,9 @@
+[run]
+source=momepy
+
+[report]
+exclude_lines =
+    except ImportError
+ignore_errors = True
+omit =
+    clustergram/test_clustergram.py

@@ -177,6 +177,28 @@ def test_cuml():
         rtol=6,
     )
 
+    clustergram = Clustergram(range(1, 10), backend="cuML", pca_weighted=False)
+    clustergram.fit(cudf.DataFrame(device_data))
+
+    pd.testing.assert_series_equal(
+        clustergram.means.mean().to_pandas(),
+        pd.Series(
+            [
+                2.31314663,
+                2.31314663,
+                2.31314663,
+                2.31314663,
+                2.31314663,
+                2.31353356,
+                2.31314663,
+                2.31326447,
+                2.31284071,
+            ],
+            index=list(range(1, 10)),
+        ),
+        rtol=6,
+    )
+
     ax = clustergram.plot()
     ax.get_geometry() == (1, 1, 1)
 

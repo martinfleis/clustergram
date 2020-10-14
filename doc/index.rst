@@ -48,8 +48,10 @@ And then we can simply pass the data to ``clustergram``.
 
 .. code:: python
 
-   from clustergram import clustergram
-   clustergram(data, range(1, 8))
+   from clustergram import Clustergram
+   cgram = Clustergram(range(1, 8))
+   cgram.fit(data)
+   cgram.plot()
 
 |Default clustergram|
 
@@ -63,9 +65,7 @@ any other matplotlib plot.
 
    seaborn.set(style='whitegrid')
 
-   clustergram(
-       data,
-       range(1, 8),
+   cgram.plot(
        ax=ax,
        size=0.5,
        linewidth=0.05,
@@ -85,13 +85,17 @@ implementation by Tal Galili.
 
 .. code:: python
 
-   clustergram(data, range(1, 8), ax=ax, pca_weighted=True, figsize=(12, 8))
+   cgram = Clustergram(range(1, 8), pca_weighted=True)
+   cgram.fit(data)
+   cgram.plot(figsize=(12, 8))
 
 |image1|
 
 .. code:: python
 
-   clustergram(data, range(1, 8), ax=ax, pca_weighted=False, figsize=(12, 8))
+   cgram = Clustergram(range(1, 8), pca_weighted=False)
+   cgram.fit(data)
+   cgram.plot(figsize=(12, 8))
 
 |image2|
 
@@ -108,13 +112,17 @@ Using scikit-learn (default):
 
 .. code:: python
 
-   clustergram(data, range(1, 8), backend='sklearn')
+   cgram = Clustergram(range(1, 8), backend='sklearn')
+   cgram.fit(data)
+   cgram.plot()
 
 Using cuML (default):
 
 .. code:: python
 
-   clustergram(data, range(1, 8), backend='cuML')
+   cgram = Clustergram(range(1, 8), backend='cuML')
+   cgram.fit(data)
+   cgram.plot()
 
 ``data`` can be all data types supported by the selected backend
 (including ``cudf.DataFrame`` with ``cuML`` backend).

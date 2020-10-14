@@ -34,8 +34,11 @@ data = scale(df.drop(columns=['species', 'island', 'sex']).dropna())
 
 And then we can simply pass the data to `clustergram`.
 ```python
-from clustergram import clustergram
-clustergram(data, range(1, 8))
+from clustergram import Clustergram
+
+cgram = Clustergram(range(1, 8))
+cgram.fit(data)
+cgram.plot()
 ```
 
 ![Default clustergram](doc/_static/default.png)
@@ -47,15 +50,13 @@ clustergram(data, range(1, 8))
 ```python
 seaborn.set(style='whitegrid')
 
-clustergram(
-    data,
-    range(1, 8),
+cgram.plot(
     ax=ax,
     size=0.5,
     linewidth=0.05,
     cluster_style={"color": "lightblue", "edgecolor": "black"},
     line_style={"color": "red", "linestyle": "-."},
-    figsize=(12, 8),
+    figsize=(12, 8)
 )
 ```
 ![Colored clustergram](doc/_static/colors.png)
@@ -65,12 +66,16 @@ clustergram(
 On the `y` axis, a clustergram can use mean values as in the original paper by Matthias Schonlau or PCA weighted mean values as in the implementation by Tal Galili.
 
 ```python
-clustergram(data, range(1, 8), ax=ax, pca_weighted=True, figsize=(12, 8))
+cgram = Clustergram(range(1, 8), pca_weighted=True)
+cgram.fit(data)
+cgram.plot(figsize=(12, 8))
 ```
 ![Default clustergram](doc/_static/pca_true.png)
 
 ```python
-clustergram(data, range(1, 8), ax=ax, pca_weighted=False, figsize=(12, 8))
+cgram = Clustergram(range(1, 8), pca_weighted=False)
+cgram.fit(data)
+cgram.plot(figsize=(12, 8))
 ```
 ![Default clustergram](doc/_static/pca_false.png)
 
@@ -82,13 +87,17 @@ Clustergram offers two backends for the computation - `scikit-learn` which uses 
 Using scikit-learn (default):
 
 ```python
-clustergram(data, range(1, 8), backend='sklearn')
+cgram = Clustergram(range(1, 8), backend='sklearn')
+cgram.fit(data)
+cgram.plot()
 ```
 
 Using cuML (default):
 
 ```python
-clustergram(data, range(1, 8), backend='cuML')
+cgram = Clustergram(range(1, 8), backend='cuML')
+cgram.fit(data)
+cgram.plot()
 ```
 
 `data` can be all data types supported by the selected backend (including `cudf.DataFrame` with `cuML` backend).

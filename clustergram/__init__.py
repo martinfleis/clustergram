@@ -1,4 +1,4 @@
-from .clustergram import clustergram, cluster_means, plot_clustergram
+from .clustergram import Clustergram
 
 __author__ = "Martin Fleischmann"
 __author_email__ = "martin@martinfleischmann.net"

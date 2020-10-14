@@ -59,3 +59,5 @@ body {
 .bd-toc {
     top: 10px!important;
 }
+
+div.doctest {margin-bottom: 2em;}

@@ -21,7 +21,7 @@ gives a thorough explanation of the concept.
 
 This is a Python translation of Tal's script written for
 ``scikit-learn`` and RAPIDS ``cuML`` implementations of K-Means
-clustering (as of v0.1).
+clustering.
 
 Getting started
 ---------------
@@ -58,7 +58,7 @@ And then we can simply pass the data to ``clustergram``.
 Styling
 -------
 
-``clustergram`` returns matplotlib axis and can be fully customised as
+``Clustergram.plot()`` returns matplotlib axis and can be fully customised as
 any other matplotlib plot.
 
 .. code:: python
@@ -127,6 +127,64 @@ Using cuML (default):
 ``data`` can be all data types supported by the selected backend
 (including ``cudf.DataFrame`` with ``cuML`` backend).
 
+Partial plot
+------------
+
+``Clustergram.plot()`` can also plot only a part of the diagram, if you want to focus on a limited range of ``k``.
+
+.. code:: python
+
+   cgram = Clustergram(range(1, 20))
+   cgram.fit(data)
+   cgram.plot(figsize=(12, 8))
+
+|Long clustergram|
+
+.. code:: python
+
+   cgram.plot(k_range=range(3, 10), figsize=(12, 8))
+
+|Limited clustergram|
+
+
+Saving clustergram
+------------------
+
+You can save both plot and ``clustergram.Clustergram`` to a disk.
+
+Saving plot
+~~~~~~~~~~~
+
+``Clustergram.plot()`` returns matplotlib axis object and as such can be
+saved as any other plot:
+
+.. code:: python
+
+   import matplotlib.pyplot as plt
+
+   cgram.plot()
+   plt.savefig('clustergram.svg')
+
+Saving object
+~~~~~~~~~~~~~
+
+If you want to save your computed ``clustergram.Clustergram`` object to
+a disk, you can use ``pickle`` library:
+
+.. code:: python
+
+   import pickle
+
+   with open('clustergram.pickle','wb') as f:
+       pickle.dump(cgram, f)
+
+Then loading is equally simple:
+
+.. code:: python
+
+   with open('clustergram.pickle','rb') as f:
+       loaded = pickle.load(f)
+
 References
 ----------
 
@@ -163,3 +221,5 @@ Indices and tables
 .. |Colored clustergram| image:: _static/colors.png
 .. |image1| image:: _static/pca_true.png
 .. |image2| image:: _static/pca_false.png
+.. |Long clustergram| image:: _static/20_clusters.png
+.. |Limited clustergram| image:: _static/limited_plot.png

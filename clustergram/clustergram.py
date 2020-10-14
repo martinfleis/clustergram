@@ -13,9 +13,18 @@ Original idea is by Matthias Schonlau - http://www.schonlau.net/clustergram.html
 
 class Clustergram:
     """
-    Clustergram class.
+    Clustergram class mimicking the interface of KMeans clustering.
 
-    TODO: Long description
+    Clustergram is a graph used to examine how cluster members are assigned to clusters
+    as the number of clusters increases. This graph is useful in
+    exploratory analysis for nonhierarchical clustering algorithms such
+    as k-means and for hierarchical cluster algorithms when the number of
+    observations is large enough to make dendrograms impractical.
+    
+    Clustergram offers two backends for the computation - ``scikit-learn``
+    which uses CPU and RAPIDS.AI ``cuML``, which uses GPU. Note that both
+    are optional dependencies, but you will need at least one of them to
+    generate clustergram.
 
     Parameters
     ----------
@@ -52,6 +61,15 @@ class Clustergram:
     ... )
     >>> c_gram2.fit(cudf_data)
     >>> c_gram2.plot(figsize=(12, 12))
+
+    References
+    ----------
+    The clustergram: A graph for visualizing hierarchical and nonhierarchical
+    cluster analyses: https://journals.sagepub.com/doi/10.1177/1536867X0200200405
+
+    Tal Galili's R implementation:
+    https://www.r-statistics.com/2010/06/clustergram-visualization-and-diagnostics-for-cluster-analysis-r-code/
+
 
     """
 
@@ -270,4 +288,3 @@ class Clustergram:
             ax.set_ylabel("Mean of the clusters")
         ax.set_xlabel("Number of clusters (k)")
         return ax
-

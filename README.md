@@ -10,7 +10,7 @@ Clustergram is a diagram proposed by Matthias Schonlau in his paper *[The cluste
 
 The clustergram was later implemented in R by [Tal Galili](https://www.r-statistics.com/2010/06/clustergram-visualization-and-diagnostics-for-cluster-analysis-r-code/), who also gives a thorough explanation of the concept.
 
-This is a Python translation of Tal's script written for `scikit-learn` and RAPIDS `cuML` implementations of K-Means clustering (as of v0.1).
+This is a Python translation of Tal's script written for `scikit-learn` and RAPIDS `cuML` implementations of K-Means clustering.
 
 ## Getting started
 
@@ -45,7 +45,7 @@ cgram.plot()
 
 ## Styling
 
-`clustergram` returns matplotlib axis and can be fully customised as any other matplotlib plot.
+`Clustergram.plot()` returns matplotlib axis and can be fully customised as any other matplotlib plot.
 
 ```python
 seaborn.set(style='whitegrid')
@@ -101,6 +101,55 @@ cgram.plot()
 ```
 
 `data` can be all data types supported by the selected backend (including `cudf.DataFrame` with `cuML` backend).
+
+## Partial plot
+
+`Clustergram.plot()` can also plot only a part of the diagram, if you want to focus on a limited range of `k`.
+
+```python
+cgram = Clustergram(range(1, 20))
+cgram.fit(data)
+cgram.plot(figsize=(12, 8))
+```
+![Long clustergram](doc/_static/20_clusters.png)
+
+```python
+cgram.plot(k_range=range(3, 10), figsize=(12, 8))
+```
+![Limited clustergram](doc/_static/limited_plot.png)
+
+## Saving clustergram
+
+You can save both plot and `clustergram.Clustergram` to a disk.
+
+### Saving plot
+
+`Clustergram.plot()` returns matplotlib axis object and as such can be saved as any other plot:
+
+```python
+import matplotlib.pyplot as plt
+
+cgram.plot()
+plt.savefig('clustergram.svg')
+```
+
+### Saving object
+
+If you want to save your computed `clustergram.Clustergram` object to a disk, you can use `pickle` library:
+
+```python
+import pickle
+
+with open('clustergram.pickle','wb') as f:
+    pickle.dump(cgram, f)
+```
+
+Then loading is equally simple:
+
+```python
+with open('clustergram.pickle','rb') as f:
+    loaded = pickle.load(f)
+```
 
 ## References
 Schonlau M. The clustergram: a graph for visualizing hierarchical and non-hierarchical cluster analyses. The Stata Journal, 2002; 2 (4):391-402.

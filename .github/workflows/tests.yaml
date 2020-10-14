@@ -1,0 +1,42 @@
+name: Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron:  '0 * * * *'
+
+jobs:
+  Test:
+    name: Test clustergram
+    runs-on: ubuntu-18.04
+    
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install micromamba
+        run: |
+          wget -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba --strip-components=1
+          ./micromamba shell init -s bash -p ~/micromamba
+          mkdir -p ~/micromamba/pkgs/
+
+      - name: Install dependencies
+        shell: bash -l {0}
+        run: |
+          export MAMBA_ROOT_PREFIX=~/micromamba
+          export MAMBA_EXE=$(pwd)/micromamba
+          . $MAMBA_ROOT_PREFIX/etc/profile.d/mamba.sh
+          ./micromamba create -f ci/envs/latest.yaml -y
+      
+      - name: Test clustergram
+        shell: bash -l {0}
+        run: |
+          export MAMBA_ROOT_PREFIX=~/micromamba
+          export MAMBA_EXE=$(pwd)/micromamba
+          . $MAMBA_ROOT_PREFIX/etc/profile.d/mamba.sh
+          micromamba activate test
+          python setup.py install
+          pytest -v --color=yes --cov=clustergram --cov-report term-missing --cov-report xml .
+
+      - uses: codecov/codecov-action@v1

@@ -1,0 +1,12 @@
+name: test
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - scikit-learn
+  - pytest
+  - pytest-cov
+  - codecov
+  - pandas
+  - numpy
+  - matplotlib

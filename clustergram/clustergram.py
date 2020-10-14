@@ -20,7 +20,7 @@ class Clustergram:
     exploratory analysis for nonhierarchical clustering algorithms such
     as k-means and for hierarchical cluster algorithms when the number of
     observations is large enough to make dendrograms impractical.
-    
+
     Clustergram offers two backends for the computation - ``scikit-learn``
     which uses CPU and RAPIDS.AI ``cuML``, which uses GPU. Note that both
     are optional dependencies, but you will need at least one of them to
@@ -151,6 +151,7 @@ class Clustergram:
             from cuml import KMeans, PCA
             from cudf import DataFrame
             import cupy as cp
+            import numpy as np
         except ImportError:
             raise ImportError(
                 "cuML, cuDF and cupy packages are required to use `cuML` backend."
@@ -172,7 +173,10 @@ class Clustergram:
                 df[n] = cp.take(means, cluster)
             else:
                 means = results.cluster_centers_.mean(axis=1)
-                df[n] = means.take(cluster).to_array()
+                if isinstance(means, (cp.core.core.ndarray, np.ndarray)):
+                    df[n] = means.take(cluster)
+                else:
+                    df[n] = means.take(cluster).to_array()
         return df
 
     def plot(

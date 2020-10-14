@@ -20,5 +20,5 @@ setuptools.setup(
         "Intended Audience :: Science/Research",
     ],
     python_requires=">=3.6",
-    install_requires=["matplotlib, numpy"],
+    install_requires=["matplotlib", "numpy"],
 )

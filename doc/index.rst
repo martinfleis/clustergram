@@ -28,7 +28,7 @@ Getting started
 
 .. code:: shell
 
-   pip install git+git://github.com/martinfleis/clustergram.git
+   pip install clustergram
 
 The example of clustergram on Palmer penguins dataset:
 

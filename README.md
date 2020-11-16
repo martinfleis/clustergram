@@ -15,7 +15,7 @@ This is a Python translation of Tal's script written for `scikit-learn` and RAPI
 ## Getting started
 
 ```shell
-pip install git+git://github.com/martinfleis/clustergram.git
+pip install clustergram
 ```
 
 The example of clustergram on Palmer penguins dataset:

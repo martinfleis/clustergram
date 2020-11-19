@@ -10,6 +10,8 @@ Original idea is by Matthias Schonlau - http://www.schonlau.net/clustergram.html
 
 """
 
+from time import time
+
 
 class Clustergram:
     """
@@ -37,9 +39,14 @@ class Clustergram:
         Clustering method. Only supported is currently ``kmeans``.
     pca_weighted : bool (default True)
         Whether use PCA weighted mean of clusters or standard mean of clusters.
+    pca_kwargs : dict (default {})
+        Additional arguments passed to the PCA object,
+        e.g. ``svd_solver``. Applies only if ``pca_weighted=True``.
+    verbose : bool (default True)
+        Print progress and time of individual steps.
     **kwargs
         Additional arguments passed to the KMeans object,
-         e.g. ``random_state``.
+        e.g. ``random_state``.
 
 
     Attributes
@@ -74,7 +81,14 @@ class Clustergram:
     """
 
     def __init__(
-        self, k_range, backend="sklearn", method="kmeans", pca_weighted=True, **kwargs,
+        self,
+        k_range,
+        backend="sklearn",
+        method="kmeans",
+        pca_weighted=True,
+        pca_kwargs={},
+        verbose=True,
+        **kwargs,
     ):
         self.k_range = k_range
 
@@ -95,6 +109,8 @@ class Clustergram:
         self.pca_weighted = pca_weighted
         self.kwargs = kwargs
         self.engine_kwargs = kwargs
+        self.pca_kwargs = pca_kwargs
+        self.verbose = verbose
 
     def fit(self, data, **kwargs):
         """
@@ -134,8 +150,13 @@ class Clustergram:
 
         df = DataFrame()
         if self.pca_weighted:
-            pca = PCA(1).fit(data)
+            s = time()
+            self.pca_kwargs.pop("n_components", 1)
+            pca = PCA(n_components=1, **self.pca_kwargs).fit(data)
+            print(f"PCA computed in {time() - s} seconds.") if self.verbose else None
+
         for n in self.k_range:
+            s = time()
             results = KMeans(n_clusters=n, **self.engine_kwargs).fit(data, **kwargs)
             cluster = results.labels_
             if self.pca_weighted:
@@ -143,6 +164,7 @@ class Clustergram:
             else:
                 means = np.mean(results.cluster_centers_, axis=1)
             df[n] = np.take(means, cluster)
+            print(f"K={n} fitted in {time() - s} seconds.") if self.verbose else None
         return df
 
     def _kmeans_cuml(self, data, **kwargs):
@@ -159,8 +181,13 @@ class Clustergram:
 
         df = DataFrame()
         if self.pca_weighted:
-            pca = PCA(1).fit(data)
+            s = time()
+            self.pca_kwargs.pop("n_components", 1)
+            pca = PCA(n_components=1, **self.pca_kwargs).fit(data)
+            print(f"PCA computed in {time() - s} seconds.") if self.verbose else None
+
         for n in self.k_range:
+            s = time()
             results = KMeans(n_clusters=n, **self.engine_kwargs).fit(data, **kwargs)
             cluster = results.labels_
             if self.pca_weighted:
@@ -177,6 +204,7 @@ class Clustergram:
                     df[n] = means.take(cluster)
                 else:
                     df[n] = means.take(cluster).to_array()
+            print(f"K={n} fitted in {time() - s} seconds.") if self.verbose else None
         return df
 
     def plot(

@@ -116,7 +116,7 @@ Using scikit-learn (default):
    cgram.fit(data)
    cgram.plot()
 
-Using cuML (default):
+Using cuML:
 
 .. code:: python
 
@@ -126,6 +126,31 @@ Using cuML (default):
 
 ``data`` can be all data types supported by the selected backend
 (including ``cudf.DataFrame`` with ``cuML`` backend).
+
+
+Supported methods
+-----------------
+
+Clustergram currently supports K-Means and Gaussian Mixture Model
+clustering methods. Note tha GMM is supported only for ``scikit-learn``
+backend.
+
+Using K-Means (default):
+
+.. code:: python
+
+   cgram = Clustergram(range(1, 8), method='kmeans')
+   cgram.fit(data)
+   cgram.plot()
+
+Using Gaussian Mixture Model:
+
+.. code:: python
+
+   cgram = Clustergram(range(1, 8), method='gmm')
+   cgram.fit(data)
+   cgram.plot()
+
 
 Partial plot
 ------------

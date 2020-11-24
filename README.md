@@ -10,7 +10,7 @@ Clustergram is a diagram proposed by Matthias Schonlau in his paper *[The cluste
 
 The clustergram was later implemented in R by [Tal Galili](https://www.r-statistics.com/2010/06/clustergram-visualization-and-diagnostics-for-cluster-analysis-r-code/), who also gives a thorough explanation of the concept.
 
-This is a Python translation of Tal's script written for `scikit-learn` and RAPIDS `cuML` implementations of K-Means clustering.
+This is a Python translation of Tal's script written for `scikit-learn` and RAPIDS `cuML` implementations of K-Means and Gaussian Mixture Model (scikit-learn only) clustering.
 
 ## Getting started
 
@@ -79,7 +79,6 @@ cgram.plot(figsize=(12, 8))
 ```
 ![Default clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/pca_false.png)
 
-
 ## Scikit-learn and RAPIDS cuML backends
 
 Clustergram offers two backends for the computation - `scikit-learn` which uses CPU and RAPIDS.AI `cuML`, which uses GPU. Note that both are optional dependencies, but you will need at least one of them to generate clustergram.
@@ -92,7 +91,7 @@ cgram.fit(data)
 cgram.plot()
 ```
 
-Using cuML (default):
+Using cuML:
 
 ```python
 cgram = Clustergram(range(1, 8), backend='cuML')
@@ -101,6 +100,26 @@ cgram.plot()
 ```
 
 `data` can be all data types supported by the selected backend (including `cudf.DataFrame` with `cuML` backend).
+
+## Supported methods
+
+Clustergram currently supports K-Means and Gaussian Mixture Model clustering methods. Note tha GMM is supported only for `scikit-learn` backend.
+
+Using K-Means (default):
+
+```python
+cgram = Clustergram(range(1, 8), method='kmeans')
+cgram.fit(data)
+cgram.plot()
+```
+
+Using Gaussian Mixture Model:
+
+```python
+cgram = Clustergram(range(1, 8), method='gmm')
+cgram.fit(data)
+cgram.plot()
+```
 
 ## Partial plot
 

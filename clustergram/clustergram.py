@@ -15,7 +15,7 @@ from time import time
 
 class Clustergram:
     """
-    Clustergram class mimicking the interface of KMeans clustering.
+    Clustergram class mimicking the interface of clustering class (e.g. KMeans).
 
     Clustergram is a graph used to examine how cluster members are assigned to clusters
     as the number of clusters increases. This graph is useful in
@@ -35,8 +35,9 @@ class Clustergram:
     backend : string ('sklearn' or 'cuML', default 'sklearn')
         Whether to use `sklearn`'s implementation of KMeans and PCA or `cuML` version.
         Sklearn does computation on CPU, cuML on GPU.
-    method : string ('kmeans' is only supported now)
-        Clustering method. Only supported is currently ``kmeans``.
+    method : string ('kmeans' or 'gmm')
+        Clustering method. ``kmeans`` uses KMeans clustering, 'gmm' Gaussian Mixture Model.
+        'gmm' is currently supported only with 'sklearn' backend.
     pca_weighted : bool (default True)
         Whether use PCA weighted mean of clusters or standard mean of clusters.
     pca_kwargs : dict (default {})
@@ -99,9 +100,10 @@ class Clustergram:
         else:
             self.backend = backend
 
-        if method not in ["kmeans"]:
+        supported = ["kmeans", "gmm"]
+        if method not in supported:
             raise ValueError(
-                f'"{method}" is not a supported method. Only "kmeans" is supported now.'
+                f'"{method}" is not a supported method. Only {supported} are supported now.'
             )
         else:
             self.method = method
@@ -132,7 +134,10 @@ class Clustergram:
 
         """
         if self.backend == "sklearn":
-            self.means = self._kmeans_sklearn(data, **kwargs)
+            if self.method == "kmeans":
+                self.means = self._kmeans_sklearn(data, **kwargs)
+            elif self.method == "gmm":
+                self.means = self._gmm_sklearn(data, **kwargs)
         if self.backend == "cuML":
             self.means = self._kmeans_cuml(data, **kwargs)
 
@@ -204,6 +209,50 @@ class Clustergram:
                     df[n] = means.take(cluster)
                 else:
                     df[n] = means.take(cluster).to_array()
+            print(f"K={n} fitted in {time() - s} seconds.") if self.verbose else None
+        return df
+
+    def _gmm_sklearn(self, data, **kwargs):
+        """Use sklearn.mixture.GaussianMixture"""
+        try:
+            from sklearn.mixture import GaussianMixture
+            from sklearn.decomposition import PCA
+            from pandas import DataFrame
+            import numpy as np
+            from scipy.stats import multivariate_normal
+        except ImportError:
+            raise ImportError(
+                "scikit-learn, pandas and numpy are required to use `sklearn` backend."
+            )
+
+        if isinstance(data, DataFrame):
+            data = data.values
+
+        df = DataFrame()
+
+        if self.pca_weighted:
+            s = time()
+            self.pca_kwargs.pop("n_components", 1)
+            pca = PCA(n_components=1, **self.pca_kwargs).fit(data)
+            print(f"PCA computed in {time() - s} seconds.") if self.verbose else None
+
+        for n in self.k_range:
+            s = time()
+            results = GaussianMixture(n_components=n, **self.engine_kwargs).fit(
+                data, **kwargs
+            )
+            cluster = results.predict(data)
+            centers = np.empty(shape=(results.n_components, data.shape[1]))
+            for i in range(results.n_components):
+                density = multivariate_normal(
+                    cov=results.covariances_[i], mean=results.means_[i]
+                ).logpdf(data)
+                centers[i, :] = data[np.argmax(density)]
+            if self.pca_weighted:
+                means = centers.dot(pca.components_[0])
+            else:
+                means = np.mean(centers, axis=1)
+            df[n] = np.take(means, cluster)
             print(f"K={n} fitted in {time() - s} seconds.") if self.verbose else None
         return df
 

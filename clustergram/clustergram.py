@@ -245,7 +245,9 @@ class Clustergram:
             centers = np.empty(shape=(results.n_components, data.shape[1]))
             for i in range(results.n_components):
                 density = multivariate_normal(
-                    cov=results.covariances_[i], mean=results.means_[i]
+                    cov=results.covariances_[i],
+                    mean=results.means_[i],
+                    allow_singular=True,
                 ).logpdf(data)
                 centers[i, :] = data[np.argmax(density)]
             if self.pca_weighted:

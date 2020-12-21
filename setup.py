@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf8") as fh:
 
 setuptools.setup(
     name="clustergram",
-    version="0.1.2",
+    version="0.2.0",
     author="Martin Fleischmann",
     author_email="martin@martinfleischmann.net",
     description="Clustergram - visualization and diagnostics for cluster analysis",
@@ -20,5 +20,5 @@ setuptools.setup(
         "Intended Audience :: Science/Research",
     ],
     python_requires=">=3.6",
-    install_requires=["matplotlib", "numpy"],
+    install_requires=["matplotlib", "numpy", "pandas"],
 )

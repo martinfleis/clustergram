@@ -15,7 +15,7 @@ from time import time
 
 class Clustergram:
     """
-    Clustergram class mimicking the interface of clustering class (e.g. KMeans).
+    Clustergram class mimicking the interface of clustering class (e.g. ``KMeans``).
 
     Clustergram is a graph used to examine how cluster members are assigned to clusters
     as the number of clusters increases. This graph is useful in
@@ -32,13 +32,13 @@ class Clustergram:
     ----------
     k_range : iterable
         iterable of integer values to be tested as k.
-    backend : string ('sklearn' or 'cuML', default 'sklearn')
-        Whether to use `sklearn`'s implementation of KMeans and PCA or `cuML` version.
-        Sklearn does computation on CPU, cuML on GPU.
-    method :  {'kmeans', 'gmm', 'minibatchkmeans'} (default 'kmeans')
-        Clustering method. ``kmeans`` uses KMeans clustering, 'gmm' Gaussian Mixture Model,
-        ``minibatchkmeans`` uses MiniBatchKMeans.
-        'gmm' and 'minibatchkmeans' are currently supported only with 'sklearn' backend.
+    backend : {'sklearn', 'cuML'} (default 'sklearn')
+        Whether to use ``sklearn``'s implementation of KMeans and PCA or ``cuML`` version.
+        ``sklearn`` does computation on CPU, ``cuml`` on GPU.
+    method : {'kmeans', 'gmm', 'minibatchkmeans'} (default 'kmeans')
+        Clustering method. ``kmeans`` uses K-Means clustering, ``gmm`` Gaussian Mixture Model,
+        ``minibatchkmeans`` uses Mini Batch K-Means.
+        ``gmm`` and ``minibatchkmeans`` are currently supported only with ``sklearn`` backend.
     pca_weighted : bool (default True)
         Whether use PCA weighted mean of clusters or standard mean of clusters.
     pca_kwargs : dict (default {})
@@ -47,7 +47,7 @@ class Clustergram:
     verbose : bool (default True)
         Print progress and time of individual steps.
     **kwargs
-        Additional arguments passed to the KMeans object,
+        Additional arguments passed to the model (e.g. ``KMeans``),
         e.g. ``random_state``.
 
 
@@ -123,9 +123,9 @@ class Clustergram:
         ----------
         data : array-like
             Input data to be clustered. It is expected that data are scaled. Can be
-            numpy.array, pandas.DataFrame or their RAPIDS counterparts.
+            ``numpy.array``, ``pandas.DataFrame`` or their RAPIDS counterparts.
         **kwargs
-            Additional arguments passed to the KMeans.fit(),
+            Additional arguments passed to the ``.fit()`` method of the model,
             e.g. ``sample_weight``.
 
         Returns
@@ -296,11 +296,11 @@ class Clustergram:
             Style options to be passed on to branches, such
             as ``color``, ``linewidth``, ``edgecolor`` or ``alpha``.
         figsize : tuple of integers (default None)
-            Size of the resulting matplotlib.figure.Figure. If the argument
-            axes is given explicitly, figsize is ignored.
+            Size of the resulting ``matplotlib.figure.Figure``. If the argument
+            ``ax`` is given explicitly, ``figsize`` is ignored.
         k_range : iterable (default None)
             iterable of integer values to be plotted. In none, ``Clustergram.k_range``
-            will be used. Has to be a substet of ``Clustergram.k_range``.
+            will be used. Has to be a subset of ``Clustergram.k_range``.
 
         Returns
         -------

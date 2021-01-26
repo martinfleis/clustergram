@@ -111,12 +111,20 @@ cgram.plot()
 
 ## Supported methods
 
-Clustergram currently supports K-Means and Gaussian Mixture Model clustering methods. Note tha GMM is supported only for `scikit-learn` backend.
+Clustergram currently supports K-Means and Gaussian Mixture Model clustering methods. Note tha GMM and Mini Batch K-Means are supported only for `scikit-learn` backend.
 
 Using K-Means (default):
 
 ```python
 cgram = Clustergram(range(1, 8), method='kmeans')
+cgram.fit(data)
+cgram.plot()
+```
+
+Using Mini Batch K-Means, which can provide significant speedup over K-Means:
+
+```python
+cgram = Clustergram(range(1, 8), method='minibatchkmeans')
 cgram.fit(data)
 cgram.plot()
 ```

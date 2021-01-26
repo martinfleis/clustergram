@@ -35,9 +35,10 @@ class Clustergram:
     backend : string ('sklearn' or 'cuML', default 'sklearn')
         Whether to use `sklearn`'s implementation of KMeans and PCA or `cuML` version.
         Sklearn does computation on CPU, cuML on GPU.
-    method : string ('kmeans' or 'gmm')
-        Clustering method. ``kmeans`` uses KMeans clustering, 'gmm' Gaussian Mixture Model.
-        'gmm' is currently supported only with 'sklearn' backend.
+    method :  {'kmeans', 'gmm', 'minibatchkmeans'} (default 'kmeans')
+        Clustering method. ``kmeans`` uses KMeans clustering, 'gmm' Gaussian Mixture Model,
+        ``minibatchkmeans`` uses MiniBatchKMeans.
+        'gmm' and 'minibatchkmeans' are currently supported only with 'sklearn' backend.
     pca_weighted : bool (default True)
         Whether use PCA weighted mean of clusters or standard mean of clusters.
     pca_kwargs : dict (default {})
@@ -100,7 +101,7 @@ class Clustergram:
         else:
             self.backend = backend
 
-        supported = ["kmeans", "gmm"]
+        supported = ["kmeans", "gmm", "minibatchkmeans"]
         if method not in supported:
             raise ValueError(
                 f'"{method}" is not a supported method. Only {supported} are supported now.'
@@ -135,16 +136,18 @@ class Clustergram:
         """
         if self.backend == "sklearn":
             if self.method == "kmeans":
-                self.means = self._kmeans_sklearn(data, **kwargs)
+                self.means = self._kmeans_sklearn(data, minibatch=False, **kwargs)
+            elif self.method == "minibatchkmeans":
+                self.means = self._kmeans_sklearn(data, minibatch=True, **kwargs)
             elif self.method == "gmm":
                 self.means = self._gmm_sklearn(data, **kwargs)
         if self.backend == "cuML":
             self.means = self._kmeans_cuml(data, **kwargs)
 
-    def _kmeans_sklearn(self, data, **kwargs):
+    def _kmeans_sklearn(self, data, minibatch, **kwargs):
         """Use scikit-learn KMeans"""
         try:
-            from sklearn.cluster import KMeans
+            from sklearn.cluster import KMeans, MiniBatchKMeans
             from sklearn.decomposition import PCA
             from pandas import DataFrame
             import numpy as np
@@ -162,7 +165,12 @@ class Clustergram:
 
         for n in self.k_range:
             s = time()
-            results = KMeans(n_clusters=n, **self.engine_kwargs).fit(data, **kwargs)
+            if minibatch:
+                results = MiniBatchKMeans(n_clusters=n, **self.engine_kwargs).fit(
+                    data, **kwargs
+                )
+            else:
+                results = KMeans(n_clusters=n, **self.engine_kwargs).fit(data, **kwargs)
             cluster = results.labels_
             if self.pca_weighted:
                 means = results.cluster_centers_.dot(pca.components_[0])

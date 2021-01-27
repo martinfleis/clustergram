@@ -317,3 +317,12 @@ def test_errors():
         Clustergram(range(1, 3), backend="nonsense")
     with pytest.raises(ValueError):
         Clustergram(range(1, 3), method="nonsense")
+
+
+def test_repr_():
+    expected = (
+        "Clustergram(k_range=range(1, 30), backend='sklearn', "
+        "method='kmeans', pca_weighted=True, kwargs={'n_init': 10})"
+    )
+    clustergram = Clustergram(range(1, 30), n_init=10)
+    assert expected == clustergram.__repr__()

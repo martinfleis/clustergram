@@ -110,10 +110,15 @@ class Clustergram:
             self.method = method
 
         self.pca_weighted = pca_weighted
-        self.kwargs = kwargs
         self.engine_kwargs = kwargs
         self.pca_kwargs = pca_kwargs
         self.verbose = verbose
+
+    def __repr__(self):
+        return (
+            f"Clustergram(k_range={self.k_range}, backend='{self.backend}', "
+            f"method='{self.method}', pca_weighted={self.pca_weighted}, kwargs={self.engine_kwargs})"
+        )
 
     def fit(self, data, **kwargs):
         """

@@ -11,6 +11,7 @@ Original idea is by Matthias Schonlau - http://www.schonlau.net/clustergram.html
 """
 
 from time import time
+import pandas as pd
 
 
 class Clustergram:
@@ -33,12 +34,13 @@ class Clustergram:
     k_range : iterable
         iterable of integer values to be tested as k.
     backend : {'sklearn', 'cuML'} (default 'sklearn')
-        Whether to use ``sklearn``'s implementation of KMeans and PCA or ``cuML`` version.
-        ``sklearn`` does computation on CPU, ``cuml`` on GPU.
+        Whether to use ``sklearn``'s implementation of KMeans and PCA or ``cuML``
+        version. ``sklearn`` does computation on CPU, ``cuml`` on GPU.
     method : {'kmeans', 'gmm', 'minibatchkmeans'} (default 'kmeans')
-        Clustering method. ``kmeans`` uses K-Means clustering, ``gmm`` Gaussian Mixture Model,
-        ``minibatchkmeans`` uses Mini Batch K-Means.
-        ``gmm`` and ``minibatchkmeans`` are currently supported only with ``sklearn`` backend.
+        Clustering method. ``kmeans`` uses K-Means clustering, ``gmm``
+        Gaussian Mixture Model, ``minibatchkmeans`` uses Mini Batch K-Means.
+        ``gmm`` and ``minibatchkmeans`` are currently supported only
+        with ``sklearn`` backend.
     pca_weighted : bool (default True)
         Whether use PCA weighted mean of clusters or standard mean of clusters.
     pca_kwargs : dict (default {})
@@ -46,6 +48,21 @@ class Clustergram:
         e.g. ``svd_solver``. Applies only if ``pca_weighted=True``.
     verbose : bool (default True)
         Print progress and time of individual steps.
+    metrics : string, list (default None)
+        Additional evaluation metrics for cluster analysis results.
+        Available metrics are:
+
+        * ``"calinski_harabasz_score"``
+        * ``"davies_bouldin_score"``
+        * ``"silhouette_score"``
+
+        Pass one or more in a list. To measure all available metrics pass ``"all"``.
+
+        See the documentation of ``sklearn.metrics`` module for details.
+    silhouette_score_kwargs : dict (default {})
+        Additional arguments passed to the silhouette_score function,
+        e.g. ``sample_size``. Applies only if ``silhouette_score`` is measured.
+
     **kwargs
         Additional arguments passed to the model (e.g. ``KMeans``),
         e.g. ``random_state``.
@@ -90,6 +107,8 @@ class Clustergram:
         pca_weighted=True,
         pca_kwargs={},
         verbose=True,
+        metrics=None,
+        silhouette_score_kwargs={},
         **kwargs,
     ):
         self.k_range = k_range
@@ -104,7 +123,8 @@ class Clustergram:
         supported = ["kmeans", "gmm", "minibatchkmeans"]
         if method not in supported:
             raise ValueError(
-                f'"{method}" is not a supported method. Only {supported} are supported now.'
+                f"'{method}' is not a supported method. "
+                f"Only {supported} are supported now."
             )
         else:
             self.method = method
@@ -114,10 +134,33 @@ class Clustergram:
         self.pca_kwargs = pca_kwargs
         self.verbose = verbose
 
+        if metrics is not None:
+            supported_metrics = [
+                "calinski_harabasz_score",
+                "davies_bouldin_score",
+                "silhouette_score",
+            ]
+            if metrics == "all":
+                metrics = supported_metrics
+            if not pd.api.types.is_list_like(metrics):
+                metrics = [metrics]
+            for metric in metrics:
+                if metric not in supported_metrics:
+                    raise ValueError(
+                        f"'{metric}' is not a supported metric. "
+                        f"Only {supported_metrics} or 'all' are supported now."
+                    )
+
+            self.metrics_score = pd.DataFrame(columns=metrics)
+
+        self.metrics = metrics
+        self.silhouette_score_kwargs = silhouette_score_kwargs
+
     def __repr__(self):
         return (
             f"Clustergram(k_range={self.k_range}, backend='{self.backend}', "
-            f"method='{self.method}', pca_weighted={self.pca_weighted}, kwargs={self.engine_kwargs})"
+            f"method='{self.method}', pca_weighted={self.pca_weighted}, "
+            f"metrics={self.metrics}, kwargs={self.engine_kwargs})"
         )
 
     def fit(self, data, **kwargs):
@@ -139,6 +182,7 @@ class Clustergram:
             Fitted clustergram.
 
         """
+        self.data = data
         if self.backend == "sklearn":
             if self.method == "kmeans":
                 self.means = self._kmeans_sklearn(data, minibatch=False, **kwargs)
@@ -182,6 +226,10 @@ class Clustergram:
             else:
                 means = np.mean(results.cluster_centers_, axis=1)
             df[n] = np.take(means, cluster)
+
+            if self.metrics is not None:
+                self._metrics(cluster, n)
+
             print(f"K={n} fitted in {time() - s} seconds.") if self.verbose else None
         return df
 
@@ -268,8 +316,27 @@ class Clustergram:
             else:
                 means = np.mean(centers, axis=1)
             df[n] = np.take(means, cluster)
+
+            if self.metrics is not None:
+                self._metrics(cluster, n)
+
             print(f"K={n} fitted in {time() - s} seconds.") if self.verbose else None
         return df
+
+    def _metrics(self, labels, k):
+        """Measure clustering metrics"""
+        from sklearn import metrics
+
+        if k > 1:
+            for metric in self.metrics:
+                if metric == "silhouette_score":
+                    self.metrics_score.loc[k, metric] = getattr(metrics, metric)(
+                        self.data, labels, **self.silhouette_score_kwargs
+                    )
+                else:
+                    self.metrics_score.loc[k, metric] = getattr(metrics, metric)(
+                        self.data, labels
+                    )
 
     def plot(
         self,

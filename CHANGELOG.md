@@ -1,6 +1,24 @@
 Changelog
 =========
 
+Version 0.3.0 (January 31, 2021)
+--------------------------------
+
+API chages:
+
+- ``pca_weighted`` is now keyword of ``Clustergram.plot()`` not init.
+
+Enhancements:
+
+- Support ``MiniBatchKMeans`` (sklearn)
+- Custom __repr__
+- Expose cluster labels obtained during the loop
+- Expose cluster centers
+- Silhouette score
+- Calinski and Harabasz score
+- Davies-Bouldin score
+
+
 Version 0.2.0 (December 21, 2020)
 ---------------------------------
 

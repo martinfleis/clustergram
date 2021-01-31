@@ -49,7 +49,10 @@ def test_sklearn_kmeans():
         2.059790669470653,
         2.271614946625764,
     ]
-    assert expected == [np.mean(clustergram.cluster_centers[x]) for x in range(1, 8)]
+    assert expected == [
+        pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-12)
+        for x in range(1, 8)
+    ]
 
     assert clustergram.plot_data_pca.empty
     ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
@@ -90,7 +93,10 @@ def test_sklearn_minibatchkmeans():
         2.0602593594306526,
         2.2717280475246584,
     ]
-    assert expected == [np.mean(clustergram.cluster_centers[x]) for x in range(1, 8)]
+    assert expected == [
+        pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-12)
+        for x in range(1, 8)
+    ]
 
     assert clustergram.plot_data_pca.empty
     ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
@@ -128,7 +134,10 @@ def test_sklearn_gmm():
         2.0444680314214723,
         2.2697082687156915,
     ]
-    assert expected == [np.mean(clustergram.cluster_centers[x]) for x in range(1, 8)]
+    assert expected == [
+        pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-12)
+        for x in range(1, 8)
+    ]
 
     assert clustergram.plot_data_pca.empty
     ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))

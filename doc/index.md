@@ -124,7 +124,7 @@ cgram.plot()
 Using Mini Batch K-Means, which can provide significant speedup over K-Means:
 
 ```python
-cgram = Clustergram(range(1, 8), method='minibatchkmeans')
+cgram = Clustergram(range(1, 8), method='minibatchkmeans', batch_size=100)
 cgram.fit(data)
 cgram.plot()
 ```

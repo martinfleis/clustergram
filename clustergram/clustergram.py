@@ -33,7 +33,7 @@ class Clustergram:
     Parameters
     ----------
     k_range : iterable
-        iterable of integer values to be tested as k.
+        iterable of integer values to be tested as ``k``.
     backend : {'sklearn', 'cuML'} (default 'sklearn')
         Whether to use ``sklearn``'s implementation of KMeans and PCA or ``cuML``
         version. ``sklearn`` does computation on CPU, ``cuml`` on GPU.
@@ -111,6 +111,15 @@ class Clustergram:
         self.engine_kwargs = kwargs
         self.verbose = verbose
 
+        if self.backend == "sklearn":
+            self.plot_data_pca = pd.DataFrame()
+            self.plot_data = pd.DataFrame()
+        else:
+            import cudf
+
+            self.plot_data_pca = cudf.DataFrame()
+            self.plot_data = cudf.DataFrame()
+
     def __repr__(self):
         return (
             f"Clustergram(k_range={self.k_range}, backend='{self.backend}', "
@@ -174,7 +183,7 @@ class Clustergram:
     def _kmeans_cuml(self, data, **kwargs):
         """Use cuML KMeans"""
         try:
-            from cuml import KMeans, PCA
+            from cuml import KMeans
             import cudf
         except ImportError:
             raise ImportError(
@@ -191,7 +200,6 @@ class Clustergram:
             self.cluster_centers[n] = results.cluster_centers_
 
             print(f"K={n} fitted in {time() - s} seconds.") if self.verbose else None
-        return df
 
     def _gmm_sklearn(self, data, **kwargs):
         """Use sklearn.mixture.GaussianMixture"""
@@ -398,15 +406,6 @@ class Clustergram:
         -------
         ax : matplotlib axis instance
         """
-        if self.backend == "sklearn":
-            self.plot_data_pca = pd.DataFrame()
-            self.plot_data = pd.DataFrame()
-        else:
-            import cudf
-
-            self.plot_data_pca = cudf.DataFrame()
-            self.plot_data = cudf.DataFrame()
-
         if pca_weighted:
             if self.plot_data_pca.empty:
                 pca_kwargs.pop("n_components", None)

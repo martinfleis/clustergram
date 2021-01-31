@@ -127,7 +127,7 @@ def test_sklearn_gmm():
 
     expected = [
         2.6841643400794335,
-        2.4203136552626865,
+        3.1705471246923214,
         2.52976769800815,
         2.74946247582996,
         2.333257525098582,
@@ -148,10 +148,10 @@ def test_sklearn_gmm():
     ax.get_geometry() == (1, 1, 1)
 
     assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
-        -0.5578663671008622, rel=1e-15
+        -0.5099395641282745, rel=1e-15
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
-        2.300054613897816, rel=1e-15
+        2.4439850629293924, rel=1e-15
     )
 
 

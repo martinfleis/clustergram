@@ -33,14 +33,21 @@ class Clustergram:
     Parameters
     ----------
     k_range : iterable
-        iterable of integer values to be tested as ``k``.
+        iterable of integer values to be tested as ``k`` (number of cluster or
+        components).
     backend : {'sklearn', 'cuML'} (default 'sklearn')
         Whether to use ``sklearn``'s implementation of KMeans and PCA or ``cuML``
         version. ``sklearn`` does computation on CPU, ``cuml`` on GPU.
     method : {'kmeans', 'gmm', 'minibatchkmeans'} (default 'kmeans')
-        Clustering method. ``kmeans`` uses K-Means clustering, ``gmm``
-        Gaussian Mixture Model, ``minibatchkmeans`` uses Mini Batch K-Means.
-        ``gmm`` and ``minibatchkmeans`` are currently supported only
+        Clustering method.
+
+        * ``kmeans`` uses K-Means clustering, either as ``sklearn.cluster.KMeans``
+          or ``cuml.KMeans``.
+        * ``gmm`` uses Gaussian Mixture Model as ``sklearn.mixture.GaussianMixture``
+        * ``minibatchkmeans`` uses Mini Batch K-Means as
+          ``sklearn.cluster.MiniBatchKMeans``
+
+        Note that ``gmm`` and ``minibatchkmeans`` are currently supported only
         with ``sklearn`` backend.
     verbose : bool (default True)
         Print progress and time of individual steps.
@@ -67,7 +74,7 @@ class Clustergram:
     Specifying parameters:
 
     >>> c_gram2 = clustergram.Clustergram(
-    ...     range(1, 9), backend="cuML", pca_weighted=False, random_state=0
+    ...     range(1, 9), backend="cuML", random_state=0
     ... )
     >>> c_gram2.fit(cudf_data)
     >>> c_gram2.plot(figsize=(12, 12))
@@ -128,7 +135,7 @@ class Clustergram:
 
     def fit(self, data, **kwargs):
         """
-        Compute (weighted) means of clusters.
+        Compute clustering for each k within set range.
 
         Parameters
         ----------
@@ -143,6 +150,11 @@ class Clustergram:
         -------
         self
             Fitted clustergram.
+
+        Examples
+        --------
+        >>> c_gram = clustergram.Clustergram(range(1, 9))
+        >>> c_gram.fit(data)
 
         """
         self.data = data
@@ -245,6 +257,7 @@ class Clustergram:
         See the documentation of ``sklearn.metrics.silhouette_score`` for details.
 
         Once computed, resulting Series is available as ``Clustergram.silhouette``.
+        Calling the original method will compute the score from the beginning.
 
         Parameters
         ----------
@@ -257,29 +270,58 @@ class Clustergram:
         -------
         self.silhouette : pd.Series
 
+        Notes
+        -----
+        The algortihm uses ``sklearn``.
+        With ``cuML`` backend, data are converted on the fly.
+
+        Examples
+        --------
+        >>> c_gram = clustergram.Clustergram(range(1, 9))
+        >>> c_gram.fit(data)
+        >>> c_gram.silhouette_score()
+        2    0.702450
+        3    0.644272
+        4    0.767728
+        5    0.948991
+        6    0.769985
+        7    0.575644
+        Name: silhouette_score, dtype: float64
+
+        Once computed:
+
+        >>> c_gram.silhouette
+        2    0.702450
+        3    0.644272
+        4    0.767728
+        5    0.948991
+        6    0.769985
+        7    0.575644
+        Name: silhouette_score, dtype: float64
+
         """
         from sklearn import metrics
 
-        self.silhouette = pd.Series(name="silhouette_score", dtype='float64')
-        
+        self.silhouette = pd.Series(name="silhouette_score", dtype="float64")
+
         if self.backend == "sklearn":
             for k in self.k_range:
                 if k > 1:
                     self.silhouette.loc[k] = metrics.silhouette_score(
                         self.data, self.labels[k], **kwargs
                     )
-        else:            
+        else:
             if hasattr(self.data, "to_pandas"):
                 data = self.data.to_pandas()
             else:
                 data = self.data.get()
-                
+
             for k in self.k_range:
                 if k > 1:
                     self.silhouette.loc[k] = metrics.silhouette_score(
                         data, self.labels[k].to_pandas(), **kwargs
                     )
-                    
+
         return self.silhouette
 
     def calinski_harabasz_score(self):
@@ -290,17 +332,49 @@ class Clustergram:
         for details.
 
         Once computed, resulting Series is available as
-        ``Clustergram.calinski_harabasz``.
+        ``Clustergram.calinski_harabasz``. Calling the original method will
+        compute the score from the beginning.
 
         Returns
         -------
         self.calinski_harabasz : pd.Series
 
+        Notes
+        -----
+        The algortihm uses ``sklearn``.
+        With ``cuML`` backend, data are converted on the fly.
+
+        Examples
+        --------
+        >>> c_gram = clustergram.Clustergram(range(1, 9))
+        >>> c_gram.fit(data)
+        >>> c_gram.calinski_harabasz_score()
+        2      23.176629
+        3      30.643018
+        4      55.223336
+        5    3116.435184
+        6    3899.068689
+        7    4439.306049
+        Name: calinski_harabasz_score, dtype: float64
+
+        Once computed:
+
+        >>> c_gram.calinski_harabasz
+        2      23.176629
+        3      30.643018
+        4      55.223336
+        5    3116.435184
+        6    3899.068689
+        7    4439.306049
+        Name: calinski_harabasz_score, dtype: float64
+
         """
         from sklearn import metrics
 
-        self.calinski_harabasz = pd.Series(name="calinski_harabasz_score", dtype='float64')
-        
+        self.calinski_harabasz = pd.Series(
+            name="calinski_harabasz_score", dtype="float64"
+        )
+
         if self.backend == "sklearn":
             for k in self.k_range:
                 if k > 1:
@@ -312,7 +386,7 @@ class Clustergram:
                 data = self.data.to_pandas()
             else:
                 data = self.data.get()
-            
+
             for k in self.k_range:
                 if k > 1:
                     self.calinski_harabasz.loc[k] = metrics.calinski_harabasz_score(
@@ -327,15 +401,45 @@ class Clustergram:
         See the documentation of ``sklearn.metrics.davies_bouldin_score`` for details.
 
         Once computed, resulting Series is available as ``Clustergram.davies_bouldin``.
+        Calling the original method will recompute the score.
 
         Returns
         -------
         self.davies_bouldin : pd.Series
 
+        Notes
+        -----
+        The algortihm uses ``sklearn``.
+        With ``cuML`` backend, data are converted on the fly.
+
+        Examples
+        --------
+        >>> c_gram = clustergram.Clustergram(range(1, 9))
+        >>> c_gram.fit(data)
+        >>> c_gram.davies_bouldin_score()
+        2    0.249366
+        3    0.351812
+        4    0.347580
+        5    0.055679
+        6    0.030516
+        7    0.025207
+        Name: davies_bouldin_score, dtype: float64
+
+        Once computed:
+
+        >>> c_gram.davies_bouldin
+        2    0.249366
+        3    0.351812
+        4    0.347580
+        5    0.055679
+        6    0.030516
+        7    0.025207
+        Name: davies_bouldin_score, dtype: float64
+
         """
         from sklearn import metrics
-        
-        self.davies_bouldin = pd.Series(name="davies_bouldin_score", dtype='float64')
+
+        self.davies_bouldin = pd.Series(name="davies_bouldin_score", dtype="float64")
 
         if self.backend == "sklearn":
             for k in self.k_range:
@@ -348,13 +452,13 @@ class Clustergram:
                 data = self.data.to_pandas()
             else:
                 data = self.data.get()
-            
+
             for k in self.k_range:
                 if k > 1:
                     self.davies_bouldin.loc[k] = metrics.davies_bouldin_score(
                         data, self.labels[k].to_pandas()
                     )
-                
+
         return self.davies_bouldin
 
     def _compute_pca_means_sklearn(self, **pca_kwargs):
@@ -383,7 +487,9 @@ class Clustergram:
 
         for n in self.k_range:
             if isinstance(self.data, cudf.DataFrame):
-                means = self.cluster_centers[n].values.dot(self.pca.components_.values[0])
+                means = self.cluster_centers[n].values.dot(
+                    self.pca.components_.values[0]
+                )
             else:
                 means = self.cluster_centers[n].dot(self.pca.components_[0])
             self.plot_data_pca[n] = cp.take(means, self.labels[n].values)
@@ -446,6 +552,18 @@ class Clustergram:
         Returns
         -------
         ax : matplotlib axis instance
+
+        Examples
+        --------
+        >>> c_gram = clustergram.Clustergram(range(1, 9))
+        >>> c_gram.fit(data)
+        >>> c_gram.plot()
+
+        Notes
+        -----
+        Before plotting, ``Clustergram`` needs to compute the summary values.
+        Those are computed on the first call of each option (pca_weighted=True/False).
+
         """
         if pca_weighted:
             if self.plot_data_pca.empty:
@@ -521,9 +639,7 @@ class Clustergram:
                 if self.backend == "sklearn":
                     sub = means.groupby([i, i + 1]).count().reset_index()
                 else:
-                    sub = (
-                        means.groupby([i, i + 1]).count().reset_index().to_pandas()
-                    )
+                    sub = means.groupby([i, i + 1]).count().reset_index().to_pandas()
                 for r in sub.itertuples():
                     ax.plot(
                         [i, i + 1],

@@ -8,7 +8,7 @@ Clustergram is a diagram proposed by Matthias Schonlau in his paper *[The cluste
 
 The clustergram was later implemented in R by [Tal Galili](https://www.r-statistics.com/2010/06/clustergram-visualization-and-diagnostics-for-cluster-analysis-r-code/), who also gives a thorough explanation of the concept.
 
-This is a Python translation of Tal's script written for `scikit-learn` and RAPIDS `cuML` implementations of K-Means and Gaussian Mixture Model (scikit-learn only) clustering.
+This is a Python translation of Tal's script written for `scikit-learn` and RAPIDS `cuML` implementations of K-Means, Mini Batch K-Means and Gaussian Mixture Model (scikit-learn only) clustering.
 
 ## Getting started
 
@@ -22,7 +22,7 @@ conda install clustergram -c conda-forge
 pip install clustergram
 ```
 
-In any case, you still need to install your selected backend 
+In any case, you still need to install your selected backend
 (`scikit-learn` or `cuML`).
 
 The example of clustergram on Palmer penguins dataset:
@@ -74,16 +74,16 @@ cgram.plot(
 On the `y` axis, a clustergram can use mean values as in the original paper by Matthias Schonlau or PCA weighted mean values as in the implementation by Tal Galili.
 
 ```python
-cgram = Clustergram(range(1, 8), pca_weighted=True)
+cgram = Clustergram(range(1, 8))
 cgram.fit(data)
-cgram.plot(figsize=(12, 8))
+cgram.plot(figsize=(12, 8), pca_weighted=True)
 ```
 ![Default clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/pca_true.png)
 
 ```python
-cgram = Clustergram(range(1, 8), pca_weighted=False)
+cgram = Clustergram(range(1, 8))
 cgram.fit(data)
-cgram.plot(figsize=(12, 8))
+cgram.plot(figsize=(12, 8), pca_weighted=False)
 ```
 ![Default clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/pca_false.png)
 
@@ -91,7 +91,7 @@ cgram.plot(figsize=(12, 8))
 
 Clustergram offers two backends for the computation - `scikit-learn` which uses CPU and RAPIDS.AI `cuML`, which uses GPU. Note that both are optional dependencies, but you will need at least one of them to generate clustergram.
 
-Using scikit-learn (default):
+Using `scikit-learn` (default):
 
 ```python
 cgram = Clustergram(range(1, 8), backend='sklearn')
@@ -99,7 +99,7 @@ cgram.fit(data)
 cgram.plot()
 ```
 
-Using cuML:
+Using `cuML`:
 
 ```python
 cgram = Clustergram(range(1, 8), backend='cuML')
@@ -111,7 +111,7 @@ cgram.plot()
 
 ## Supported methods
 
-Clustergram currently supports K-Means and Gaussian Mixture Model clustering methods. Note tha GMM and Mini Batch K-Means are supported only for `scikit-learn` backend.
+Clustergram currently supports K-Means, Mini Batch K-Means and Gaussian Mixture Model clustering methods. Note tha GMM and Mini Batch K-Means are supported only for `scikit-learn` backend.
 
 Using K-Means (default):
 
@@ -152,6 +152,79 @@ cgram.plot(figsize=(12, 8))
 cgram.plot(k_range=range(3, 10), figsize=(12, 8))
 ```
 ![Limited clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/limited_plot.png)
+
+## Additional clustering performance evaluation
+
+Clustergam includes handy wrappers around a selection of clustering performance metrics offered by
+`scikit-learn`. Data which were originally computed on GPU are converted to numpy on the fly.
+
+### Silhouette score
+
+Compute the mean Silhouette Coefficient of all samples. See [`scikit-learn` documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_score.html#sklearn.metrics.silhouette_score) for details.
+
+```python
+>>> cgram.silhouette_score()
+2    0.531540
+3    0.447219
+4    0.400154
+5    0.377720
+6    0.372128
+7    0.331575
+Name: silhouette_score, dtype: float64
+```
+Once computed, resulting Series is available as `cgram.silhouette`. Calling the original method will recompute the score.
+
+### Calinski and Harabasz score
+
+Compute the Calinski and Harabasz score, also known as the Variance Ratio Criterion. See [`scikit-learn` documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.calinski_harabasz_score.html#sklearn.metrics.calinski_harabasz_score) for details.
+
+```python
+>>> cgram.calinski_harabasz_score()
+2    482.191469
+3    441.677075
+4    400.392131
+5    411.175066
+6    382.731416
+7    352.447569
+Name: calinski_harabasz_score, dtype: float64
+```
+Once computed, resulting Series is available as `cgram.calinski_harabasz`. Calling the original method will recompute the score.
+
+### Davies-Bouldin score
+
+Compute the Davies-Bouldin score. See [`scikit-learn` documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.davies_bouldin_score.html#sklearn.metrics.davies_bouldin_score) for details.
+
+```python
+>>> cgram.davies_bouldin_score()
+2    0.714064
+3    0.943553
+4    0.943320
+5    0.973248
+6    0.950910
+7    1.074937
+Name: davies_bouldin_score, dtype: float64
+```
+Once computed, resulting Series is available as `cgram.davies_bouldin`. Calling the original method will recompute the score.
+
+## Acessing labels
+
+`Clustergram` stores resulting labels for each of the tested options, which can be accessed as:
+
+```python
+>>> cgram.labels
+     1  2  3  4  5  6  7
+0    0  0  2  2  3  2  1
+1    0  0  2  2  3  2  1
+2    0  0  2  2  3  2  1
+3    0  0  2  2  3  2  1
+4    0  0  2  2  0  0  3
+..  .. .. .. .. .. .. ..
+337  0  1  1  3  2  5  0
+338  0  1  1  3  2  5  0
+339  0  1  1  1  1  1  4
+340  0  1  1  3  2  5  5
+341  0  1  1  1  1  1  5
+```
 
 ## Saving clustergram
 

@@ -35,10 +35,8 @@ def test_sklearn_kmeans():
     clustergram = Clustergram(range(1, 8), backend="sklearn", random_state=random_state)
     clustergram.fit(data)
 
-    pd.testing.assert_series_equal(
-        clustergram.labels.mean(),
-        pd.Series([0.0, 0.2, 0.6, 1.8, 2.0, 2.2, 2.7], index=range(1, 8)),
-    )
+    for i in range(1, 8):
+        assert clustergram.labels[i].nunique() == i
     assert clustergram.labels.shape == (10, 7)
     assert clustergram.labels.notna().all().all()
 
@@ -78,10 +76,8 @@ def test_sklearn_minibatchkmeans():
     )
     clustergram.fit(data)
 
-    pd.testing.assert_series_equal(
-        clustergram.labels.mean(),
-        pd.Series([0.0, 0.2, 0.6, 1.2, 2.0, 2.1, 2.6], index=range(1, 8)),
-    )
+    for i in range(1, 8):
+        assert clustergram.labels[i].nunique() == i
     assert clustergram.labels.shape == (10, 7)
     assert clustergram.labels.notna().all().all()
 
@@ -118,10 +114,8 @@ def test_sklearn_gmm():
     )
     clustergram.fit(data)
 
-    pd.testing.assert_series_equal(
-        clustergram.labels.mean(),
-        pd.Series([0.0, 0.2, 0.6, 1.8, 2.0, 2.2, 2.7], index=range(1, 8)),
-    )
+    for i in range(1, 8):
+        assert clustergram.labels[i].nunique() == i
     assert clustergram.labels.shape == (10, 7)
     assert clustergram.labels.notna().all().all()
 
@@ -176,10 +170,8 @@ def test_cuml_kmeans():
     clustergram = Clustergram(range(1, 8), backend="cuML", random_state=random_state)
     clustergram.fit(data)
 
-    pd.testing.assert_series_equal(
-        clustergram.labels.mean().to_pandas(),
-        pd.Series([0, 0.7, 0.9, 1.8, 2, 1.6, 2.2], index=range(1, 8)),
-    )
+    for i in range(1, 8):
+        assert clustergram.labels[i].nunique() == i
     assert clustergram.labels.shape == (10, 7)
     assert clustergram.labels.notna().all().all()
 
@@ -218,10 +210,8 @@ def test_cuml_kmeans():
     clustergram = Clustergram(range(1, 8), backend="cuML", random_state=random_state)
     clustergram.fit(data)
 
-    pd.testing.assert_series_equal(
-        clustergram.labels.mean().to_pandas(),
-        pd.Series([0, 0.7, 0.9, 1.8, 2, 1.6, 2.2], index=range(1, 8)),
-    )
+    for i in range(1, 8):
+        assert clustergram.labels[i].nunique() == i
     assert clustergram.labels.shape == (10, 7)
     assert clustergram.labels.notna().all().all()
 
@@ -320,7 +310,14 @@ def test_silhouette_score_cuml():
     pd.testing.assert_series_equal(
         clustergram.silhouette_score(),
         pd.Series(
-            [0.7494349479675293, 0.9806153178215027, 0.6721830368041992, 0.39418715238571167, 0.44574037194252014, 0.08033210784196854],
+            [
+                0.7494349479675293,
+                0.9806153178215027,
+                0.6721830368041992,
+                0.39418715238571167,
+                0.44574037194252014,
+                0.08033210784196854,
+            ],
             index=list(range(2, 8)),
             name="silhouette_score",
         ),
@@ -332,7 +329,14 @@ def test_silhouette_score_cuml():
     pd.testing.assert_series_equal(
         clustergram.silhouette_score(),
         pd.Series(
-            [0.7494349479675293, 0.9806153178215027, 0.6721830368041992, 0.39418715238571167, 0.44574037194252014, 0.08033210784196854],
+            [
+                0.7494349479675293,
+                0.9806153178215027,
+                0.6721830368041992,
+                0.39418715238571167,
+                0.44574037194252014,
+                0.08033210784196854,
+            ],
             index=list(range(2, 8)),
             name="silhouette_score",
         ),
@@ -402,7 +406,14 @@ def test_calinski_harabasz_score_cuml():
     pd.testing.assert_series_equal(
         clustergram.calinski_harabasz_score(),
         pd.Series(
-            [25.619150510634366, 15374.042816067375, 10813.16845006968, 8818.1163716754, 8070.657293970755, 7259.89764652579],
+            [
+                25.619150510634366,
+                15374.042816067375,
+                10813.16845006968,
+                8818.1163716754,
+                8070.657293970755,
+                7259.89764652579,
+            ],
             index=list(range(2, 8)),
             name="calinski_harabasz_score",
         ),
@@ -414,7 +425,14 @@ def test_calinski_harabasz_score_cuml():
     pd.testing.assert_series_equal(
         clustergram.calinski_harabasz_score(),
         pd.Series(
-            [25.619150510634366, 15374.042816067375, 10813.16845006968, 8818.1163716754, 8070.657293970755, 7259.89764652579],
+            [
+                25.619150510634366,
+                15374.042816067375,
+                10813.16845006968,
+                8818.1163716754,
+                8070.657293970755,
+                7259.89764652579,
+            ],
             index=list(range(2, 8)),
             name="calinski_harabasz_score",
         ),
@@ -470,7 +488,14 @@ def test_davies_bouldin_score_cuml():
     pd.testing.assert_series_equal(
         clustergram.davies_bouldin_score(),
         pd.Series(
-            [0.3107512701086121, 0.02263161666570639, 0.2261582258142144, 0.3839688146565784, 0.13388392354928222, 0.279734367840293],
+            [
+                0.3107512701086121,
+                0.02263161666570639,
+                0.2261582258142144,
+                0.3839688146565784,
+                0.13388392354928222,
+                0.279734367840293,
+            ],
             index=list(range(2, 8)),
             name="davies_bouldin_score",
         ),
@@ -482,7 +507,14 @@ def test_davies_bouldin_score_cuml():
     pd.testing.assert_series_equal(
         clustergram.davies_bouldin_score(),
         pd.Series(
-            [0.3107512701086121, 0.02263161666570639, 0.2261582258142144, 0.3839688146565784, 0.13388392354928222, 0.279734367840293],
+            [
+                0.3107512701086121,
+                0.02263161666570639,
+                0.2261582258142144,
+                0.3839688146565784,
+                0.13388392354928222,
+                0.279734367840293,
+            ],
             index=list(range(2, 8)),
             name="davies_bouldin_score",
         ),

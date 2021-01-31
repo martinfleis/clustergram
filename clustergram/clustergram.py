@@ -260,12 +260,26 @@ class Clustergram:
         """
         from sklearn import metrics
 
-        self.silhouette = pd.Series(name="silhouette_score")
-        for k in self.k_range:
-            if k > 1:
-                self.silhouette.loc[k] = metrics.silhouette_score(
-                    self.data, self.labels[k], **kwargs
-                )
+        self.silhouette = pd.Series(name="silhouette_score", dtype='float64')
+        
+        if self.backend == "sklearn":
+            for k in self.k_range:
+                if k > 1:
+                    self.silhouette.loc[k] = metrics.silhouette_score(
+                        self.data, self.labels[k], **kwargs
+                    )
+        else:            
+            if hasattr(self.data, "to_pandas"):
+                data = self.data.to_pandas()
+            else:
+                data = self.data.get()
+                
+            for k in self.k_range:
+                if k > 1:
+                    self.silhouette.loc[k] = metrics.silhouette_score(
+                        data, self.labels[k].to_pandas(), **kwargs
+                    )
+                    
         return self.silhouette
 
     def calinski_harabasz_score(self):
@@ -285,12 +299,25 @@ class Clustergram:
         """
         from sklearn import metrics
 
-        self.calinski_harabasz = pd.Series(name="calinski_harabasz_score")
-        for k in self.k_range:
-            if k > 1:
-                self.calinski_harabasz.loc[k] = metrics.calinski_harabasz_score(
-                    self.data, self.labels[k]
-                )
+        self.calinski_harabasz = pd.Series(name="calinski_harabasz_score", dtype='float64')
+        
+        if self.backend == "sklearn":
+            for k in self.k_range:
+                if k > 1:
+                    self.calinski_harabasz.loc[k] = metrics.calinski_harabasz_score(
+                        self.data, self.labels[k]
+                    )
+        else:
+            if hasattr(self.data, "to_pandas"):
+                data = self.data.to_pandas()
+            else:
+                data = self.data.get()
+            
+            for k in self.k_range:
+                if k > 1:
+                    self.calinski_harabasz.loc[k] = metrics.calinski_harabasz_score(
+                        data, self.labels[k].to_pandas()
+                    )
         return self.calinski_harabasz
 
     def davies_bouldin_score(self):
@@ -307,13 +334,27 @@ class Clustergram:
 
         """
         from sklearn import metrics
+        
+        self.davies_bouldin = pd.Series(name="davies_bouldin_score", dtype='float64')
 
-        self.davies_bouldin = pd.Series(name="davies_bouldin_score")
-        for k in self.k_range:
-            if k > 1:
-                self.davies_bouldin.loc[k] = metrics.davies_bouldin_score(
-                    self.data, self.labels[k]
-                )
+        if self.backend == "sklearn":
+            for k in self.k_range:
+                if k > 1:
+                    self.davies_bouldin.loc[k] = metrics.davies_bouldin_score(
+                        self.data, self.labels[k]
+                    )
+        else:
+            if hasattr(self.data, "to_pandas"):
+                data = self.data.to_pandas()
+            else:
+                data = self.data.get()
+            
+            for k in self.k_range:
+                if k > 1:
+                    self.davies_bouldin.loc[k] = metrics.davies_bouldin_score(
+                        data, self.labels[k].to_pandas()
+                    )
+                
         return self.davies_bouldin
 
     def _compute_pca_means_sklearn(self, **pca_kwargs):
@@ -342,7 +383,7 @@ class Clustergram:
 
         for n in self.k_range:
             if isinstance(self.data, cudf.DataFrame):
-                means = self.cluster_centers[n].dot(self.pca.components_.values[0])
+                means = self.cluster_centers[n].values.dot(self.pca.components_.values[0])
             else:
                 means = self.cluster_centers[n].dot(self.pca.components_[0])
             self.plot_data_pca[n] = cp.take(means, self.labels[n].values)
@@ -481,7 +522,7 @@ class Clustergram:
                     sub = means.groupby([i, i + 1]).count().reset_index()
                 else:
                     sub = (
-                        self.means.groupby([i, i + 1]).count().reset_index().to_pandas()
+                        means.groupby([i, i + 1]).count().reset_index().to_pandas()
                     )
                 for r in sub.itertuples():
                     ax.plot(

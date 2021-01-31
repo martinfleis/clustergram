@@ -13,16 +13,17 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
-
+import clustergram  # noqa
 
 # -- Project information -----------------------------------------------------
 
 project = "Clustergram"
-copyright = "2020, Martin Fleischmann"
+copyright = "2020-2021, Martin Fleischmann"
 author = "Martin Fleischmann"
 
+version = clustergram.__version__
 # The full version, including alpha/beta/rc tags
-release = "v0.2.1"
+release = version
 
 
 # -- General configuration ---------------------------------------------------

@@ -1,11 +1,12 @@
 import setuptools
+import versioneer
 
 with open("README.md", "r", encoding="utf8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="clustergram",
-    version="0.2.1",
+    version=versioneer.get_version(),
     author="Martin Fleischmann",
     author_email="martin@martinfleischmann.net",
     description="Clustergram - visualization and diagnostics for cluster analysis",
@@ -21,4 +22,5 @@ setuptools.setup(
     ],
     python_requires=">=3.6",
     install_requires=["matplotlib", "numpy", "pandas"],
+    cmdclass=versioneer.get_cmdclass(),
 )

@@ -1,0 +1,9 @@
+name: clustergram
+channels:
+  - conda-forge
+dependencies:
+  - scikit-learn
+  - pandas
+  - numpy
+  - matplotlib
+  - clustergram

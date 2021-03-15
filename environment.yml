@@ -7,3 +7,7 @@ dependencies:
   - numpy
   - matplotlib
   - clustergram
+  - seaborn
+  - pip
+  pip:
+    - urbangrammar-graphics

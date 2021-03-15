@@ -9,5 +9,5 @@ dependencies:
   - clustergram
   - seaborn
   - pip
-  pip:
+  - pip:
     - urbangrammar-graphics

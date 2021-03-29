@@ -25,20 +25,26 @@ class Clustergram:
     as k-means and for hierarchical cluster algorithms when the number of
     observations is large enough to make dendrograms impractical.
 
-    Clustergram offers two backends for the computation - ``scikit-learn``
-    which uses CPU and RAPIDS.AI ``cuML``, which uses GPU. Note that both
-    are optional dependencies, but you will need at least one of them to
+    Clustergram offers three backends for the computation - ``scikit-learn`` and
+    ``scipy`` which use CPU and RAPIDS.AI ``cuML``, which uses GPU. Note that all
+    are optional dependencies but you will need at least one of them to
     generate clustergram.
 
     Parameters
     ----------
-    k_range : iterable
+    k_range : iterable (default None)
         iterable of integer values to be tested as ``k`` (number of cluster or
-        components).
-    backend : {'sklearn', 'cuML'} (default 'sklearn')
-        Whether to use ``sklearn``'s implementation of KMeans and PCA or ``cuML``
-        version. ``sklearn`` does computation on CPU, ``cuml`` on GPU.
-    method : {'kmeans', 'gmm', 'minibatchkmeans'} (default 'kmeans')
+        components). Not required for hierarchical clustering but will be applied
+        if given. It is recommended to always use limited range for hierarchical
+        methods as unlimited clustergram can take a while to compute and for large
+        number of observations is not legible.
+    backend : {'sklearn', 'cuML', 'scipy'} (default None)
+        Specify computational backend. Defaults to ``sklearn`` for ``'kmeans'``,
+        ``'gmm'``, and ``'minibatchkmeans'`` methods and to ``'scipy'`` for any of
+        hierarchical clustering methods. ``'scipy'`` uses ``sklearn`` for PCA
+        computation if that is required.
+        ``sklearn`` does computation on CPU, ``cuml`` on GPU.
+    method : {'kmeans', 'gmm', 'minibatchkmeans', 'hierarchical'} (default 'kmeans')
         Clustering method.
 
         * ``kmeans`` uses K-Means clustering, either as ``sklearn.cluster.KMeans``
@@ -46,6 +52,8 @@ class Clustergram:
         * ``gmm`` uses Gaussian Mixture Model as ``sklearn.mixture.GaussianMixture``
         * ``minibatchkmeans`` uses Mini Batch K-Means as
           ``sklearn.cluster.MiniBatchKMeans``
+        * ``hierarchical`` uses hierarchical/agglomerative clustering as
+          ``scipy.cluster.hierarchy.linkage``. See
 
         Note that ``gmm`` and ``minibatchkmeans`` are currently supported only
         with ``sklearn`` backend.
@@ -53,7 +61,10 @@ class Clustergram:
         Print progress and time of individual steps.
     **kwargs
         Additional arguments passed to the model (e.g. ``KMeans``),
-        e.g. ``random_state``.
+        e.g. ``random_state``. Pass ``linkage`` to specify linkage method in
+        case of hierarchical clustering (e.g. ``linkage='ward'``). See the
+        documentation of scipy for details:
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html#scipy.cluster.hierarchy.linkage
 
 
     Attributes
@@ -63,6 +74,8 @@ class Clustergram:
         DataFrame with cluster labels for each iteration.
     cluster_centers : dict
         Dictionary with cluster centers for each iteration.
+    linkage : scipy.cluster.hierarchy.linkage
+        Linkage object for hierarchical methods.
 
 
     Examples
@@ -91,7 +104,12 @@ class Clustergram:
     """
 
     def __init__(
-        self, k_range, backend="sklearn", method="kmeans", verbose=True, **kwargs,
+        self,
+        k_range=None,
+        backend=None,
+        method="kmeans",
+        verbose=True,
+        **kwargs,
     ):
         self.k_range = k_range
 
@@ -99,14 +117,19 @@ class Clustergram:
         kwargs.pop("pca_weighted", None)
         kwargs.pop("pca_kwargs", None)
 
-        if backend not in ["sklearn", "cuML"]:
+        if backend is None:
+            backend = "scipy" if method == "hierarchical" else "sklearn"
+
+        allowed_backends = ["sklearn", "cuML", "scipy"]
+        if backend not in allowed_backends:
             raise ValueError(
-                f'"{backend}" is not a supported backend. Use "sklearn" or "cuML".'
+                f'"{backend}" is not a supported backend. '
+                f"Use one of {allowed_backends}."
             )
         else:
             self.backend = backend
 
-        supported = ["kmeans", "gmm", "minibatchkmeans"]
+        supported = ["kmeans", "gmm", "minibatchkmeans", "hierarchical"]
         if method not in supported:
             raise ValueError(
                 f"'{method}' is not a supported method. "
@@ -115,10 +138,23 @@ class Clustergram:
         else:
             self.method = method
 
+        if self.k_range is None and self.method != "hierarchical":
+            raise ValueError(f"'k_range' is mandatory for '{self.method}' method.")
+
+        if (
+            (self.backend == "cuML" and self.method != "kmeans")
+            or (self.backend == "scipy" and self.method != "hierarchical")
+            or (self.backend == "sklearn" and self.method == "hierarchical")
+        ):
+            raise ValueError(
+                f"'{self.method}' method is not implemented "
+                f"for '{self.backend}' backend. Use supported combination."
+            )
+
         self.engine_kwargs = kwargs
         self.verbose = verbose
 
-        if self.backend == "sklearn":
+        if self.backend in ["sklearn", "scipy"]:
             self.plot_data_pca = pd.DataFrame()
             self.plot_data = pd.DataFrame()
         else:
@@ -164,9 +200,11 @@ class Clustergram:
             elif self.method == "minibatchkmeans":
                 self._kmeans_sklearn(data, minibatch=True, **kwargs)
             elif self.method == "gmm":
-                self.means = self._gmm_sklearn(data, **kwargs)
+                self._gmm_sklearn(data, **kwargs)
         if self.backend == "cuML":
-            self.means = self._kmeans_cuml(data, **kwargs)
+            self._kmeans_cuml(data, **kwargs)
+        if self.backend == "scipy":
+            self._scipy_hierarchical(data, **kwargs)
 
     def _kmeans_sklearn(self, data, minibatch, **kwargs):
         """Use scikit-learn KMeans"""
@@ -217,7 +255,6 @@ class Clustergram:
         """Use sklearn.mixture.GaussianMixture"""
         try:
             from sklearn.mixture import GaussianMixture
-            import numpy as np
             from scipy.stats import multivariate_normal
         except ImportError:
             raise ImportError(
@@ -249,6 +286,33 @@ class Clustergram:
             self.cluster_centers[n] = centers
 
             print(f"K={n} fitted in {time() - s} seconds.") if self.verbose else None
+
+    def _scipy_hierarchical(self, data, **kwargs):
+        """Use scipy.cluster.hierarchy.linkage"""
+        try:
+            from scipy.cluster import hierarchy
+        except ImportError:
+            raise ImportError("scipy is required to use `scipy` backend.")
+
+        method = self.engine_kwargs.pop("linkage", "single")
+        self.linkage = hierarchy.linkage(data, method=method, **self.engine_kwargs)
+        rootnode, nodelist = hierarchy.to_tree(self.linkage, rd=True)
+        distances = [node.dist for node in nodelist if node.dist > 0][::-1]
+
+        self.labels = pd.DataFrame()
+        self.cluster_centers = {}
+
+        if self.k_range is None:
+            self.k_range = range(1, len(distances) + 1)
+
+        if not isinstance(data, pd.DataFrame):
+            data = pd.DataFrame(data)
+
+        for i in self.k_range:
+            d = distances[i - 1]
+            lab = hierarchy.fcluster(self.linkage, d, criterion="distance")
+            self.labels[i] = lab - 1
+            self.cluster_centers[i] = data.groupby(lab).mean().values
 
     def silhouette_score(self, **kwargs):
         """
@@ -304,7 +368,7 @@ class Clustergram:
 
         self.silhouette = pd.Series(name="silhouette_score", dtype="float64")
 
-        if self.backend == "sklearn":
+        if self.backend in ["sklearn", "scipy"]:
             for k in self.k_range:
                 if k > 1:
                     self.silhouette.loc[k] = metrics.silhouette_score(
@@ -375,7 +439,7 @@ class Clustergram:
             name="calinski_harabasz_score", dtype="float64"
         )
 
-        if self.backend == "sklearn":
+        if self.backend in ["sklearn", "scipy"]:
             for k in self.k_range:
                 if k > 1:
                     self.calinski_harabasz.loc[k] = metrics.calinski_harabasz_score(
@@ -441,7 +505,7 @@ class Clustergram:
 
         self.davies_bouldin = pd.Series(name="davies_bouldin_score", dtype="float64")
 
-        if self.backend == "sklearn":
+        if self.backend in ["sklearn", "scipy"]:
             for k in self.k_range:
                 if k > 1:
                     self.davies_bouldin.loc[k] = metrics.davies_bouldin_score(
@@ -569,13 +633,13 @@ class Clustergram:
             if self.plot_data_pca.empty:
                 pca_kwargs.pop("n_components", None)
 
-                if self.backend == "sklearn":
+                if self.backend in ["sklearn", "scipy"]:
                     self._compute_pca_means_sklearn(**pca_kwargs)
                 else:
                     self._compute_pca_means_cuml(**pca_kwargs)
         else:
             if self.plot_data.empty:
-                if self.backend == "sklearn":
+                if self.backend in ["sklearn", "scipy"]:
                     self._compute_means_sklearn()
                 else:
                     self._compute_means_cuml()
@@ -612,7 +676,7 @@ class Clustergram:
         for i in k_range:
             cl = means[i].value_counts()
 
-            if self.backend == "sklearn":
+            if self.backend in ["sklearn", "scipy"]:
                 ax.scatter(
                     [i] * i,
                     [cl.index],
@@ -636,7 +700,7 @@ class Clustergram:
                 )
 
             try:
-                if self.backend == "sklearn":
+                if self.backend in ["sklearn", "scipy"]:
                     sub = means.groupby([i, i + 1]).count().reset_index()
                 else:
                     sub = means.groupby([i, i + 1]).count().reset_index().to_pandas()

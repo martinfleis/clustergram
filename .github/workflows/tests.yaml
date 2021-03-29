@@ -2,9 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
   schedule:
     - cron:  '0 0 * * 5'
 
@@ -12,7 +12,7 @@ jobs:
   Test:
     name: Test clustergram
     runs-on: [ubuntu-latest]
-    
+
     steps:
       - uses: actions/checkout@v2
       - name: Install micromamba
@@ -28,7 +28,7 @@ jobs:
           export MAMBA_EXE=$(pwd)/micromamba
           . $MAMBA_ROOT_PREFIX/etc/profile.d/mamba.sh
           ./micromamba create -f ci/envs/latest.yaml -y
-      
+
       - name: Test clustergram
         shell: bash -l {0}
         run: |

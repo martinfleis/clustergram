@@ -156,7 +156,8 @@ def test_sklearn_gmm():
 
 
 @pytest.mark.skipif(
-    not RAPIDS, reason="RAPIDS not available.",
+    not RAPIDS,
+    reason="RAPIDS not available.",
 )
 def test_cuml_kmeans():
     n_samples = 10
@@ -254,14 +255,71 @@ def test_cuml_kmeans():
     )
 
 
+def test_hierarchical():
+    clustergram = Clustergram(range(1, 8), method="hierarchical")
+    clustergram.fit(data)
+
+    for i in range(1, 8):
+        assert clustergram.labels[i].nunique() == i
+    assert clustergram.labels.shape == (10, 7)
+    assert clustergram.labels.notna().all().all()
+
+    expected = [
+        2.344852974843885,
+        2.793993337861089,
+        2.827052593402202,
+        2.513999519667852,
+        2.3448529748438847,
+        2.059790669470653,
+        2.2716149466257645,
+    ]
+    assert expected == [
+        pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-12)
+        for x in range(1, 8)
+    ]
+
+    assert clustergram.plot_data_pca.empty
+    ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
+    ax.get_geometry() == (1, 1, 1)
+
+    assert clustergram.plot_data.empty
+    ax = clustergram.plot(pca_weighted=False)
+    ax.get_geometry() == (1, 1, 1)
+
+    assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
+        -0.2172638314564372, rel=1e-15
+    )
+    assert clustergram.plot_data.mean().mean() == pytest.approx(
+        2.3448529748438847, rel=1e-15
+    )
+
+
+def test_hierarchical_array():
+    clustergram = Clustergram(method="hierarchical")
+    clustergram.fit(data.values)
+
+    for i in range(1, 10):
+        assert clustergram.labels[i].nunique() == i
+    assert clustergram.labels.shape == (10, 9)
+    assert clustergram.labels.notna().all().all()
+
+
 def test_errors():
     with pytest.raises(ValueError):
         Clustergram(range(1, 3), backend="nonsense")
     with pytest.raises(ValueError):
         Clustergram(range(1, 3), method="nonsense")
+    with pytest.raises(ValueError):
+        Clustergram(range(1, 3), method="kmeans", backend="scipy")
+    with pytest.raises(ValueError):
+        Clustergram(range(1, 3), method="hieararchical", backend="sklearn")
+    with pytest.raises(ValueError):
+        Clustergram(range(1, 3), method="gmm", backend="cuML")
+    with pytest.raises(ValueError):
+        Clustergram()
 
 
-def test_repr_():
+def test_repr():
     expected = (
         "Clustergram(k_range=range(1, 30), backend='sklearn', "
         "method='kmeans', kwargs={'n_init': 10})"
@@ -294,7 +352,8 @@ def test_silhouette_score():
 
 
 @pytest.mark.skipif(
-    not RAPIDS, reason="RAPIDS not available.",
+    not RAPIDS,
+    reason="RAPIDS not available.",
 )
 def test_silhouette_score_cuml():
     n_samples = 10
@@ -390,7 +449,8 @@ def test_calinski_harabasz_score():
 
 
 @pytest.mark.skipif(
-    not RAPIDS, reason="RAPIDS not available.",
+    not RAPIDS,
+    reason="RAPIDS not available.",
 )
 def test_calinski_harabasz_score_cuml():
     n_samples = 10
@@ -472,7 +532,8 @@ def test_davies_bouldin_score():
 
 
 @pytest.mark.skipif(
-    not RAPIDS, reason="RAPIDS not available.",
+    not RAPIDS,
+    reason="RAPIDS not available.",
 )
 def test_davies_bouldin_score_cuml():
     n_samples = 10

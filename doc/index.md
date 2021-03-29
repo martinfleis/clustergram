@@ -8,7 +8,7 @@ Clustergram is a diagram proposed by Matthias Schonlau in his paper *[The cluste
 
 The clustergram was later implemented in R by [Tal Galili](https://www.r-statistics.com/2010/06/clustergram-visualization-and-diagnostics-for-cluster-analysis-r-code/), who also gives a thorough explanation of the concept.
 
-This is a Python translation of Tal's script written for `scikit-learn` and RAPIDS `cuML` implementations of K-Means, Mini Batch K-Means and Gaussian Mixture Model (scikit-learn only) clustering.
+This is a Python translation of Tal's script written for `scikit-learn` and RAPIDS `cuML` implementations of K-Means, Mini Batch K-Means and Gaussian Mixture Model (scikit-learn only) clustering, plus hierarchical/agglomerative clustering using `SciPy`.
 
 ## Getting started
 
@@ -23,7 +23,7 @@ pip install clustergram
 ```
 
 In any case, you still need to install your selected backend
-(`scikit-learn` or `cuML`).
+(`scikit-learn` and `scipy` or `cuML`).
 
 The example of clustergram on Palmer penguins dataset:
 
@@ -87,9 +87,9 @@ cgram.plot(figsize=(12, 8), pca_weighted=False)
 ```
 ![Default clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/pca_false.png)
 
-## Scikit-learn and RAPIDS cuML backends
+## Scikit-learn, SciPy and RAPIDS cuML backends
 
-Clustergram offers two backends for the computation - `scikit-learn` which uses CPU and RAPIDS.AI `cuML`, which uses GPU. Note that both are optional dependencies, but you will need at least one of them to generate clustergram.
+Clustergram offers three backends for the computation - `scikit-learn` and `scipy` which use CPU and RAPIDS.AI `cuML`, which uses GPU. Note that all are optional dependencies but you will need at least one of them to generate clustergram.
 
 Using `scikit-learn` (default):
 
@@ -111,7 +111,7 @@ cgram.plot()
 
 ## Supported methods
 
-Clustergram currently supports K-Means, Mini Batch K-Means and Gaussian Mixture Model clustering methods. Note tha GMM and Mini Batch K-Means are supported only for `scikit-learn` backend.
+Clustergram currently supports K-Means, Mini Batch K-Means, Gaussian Mixture Model and SciPy's hierarchical clustering methods. Note tha GMM and Mini Batch K-Means are supported only for `scikit-learn` backend and hierarchical methods are supported only for `scipy` backend.
 
 Using K-Means (default):
 
@@ -133,6 +133,14 @@ Using Gaussian Mixture Model:
 
 ```python
 cgram = Clustergram(range(1, 8), method='gmm')
+cgram.fit(data)
+cgram.plot()
+```
+
+Using Ward's hierarchical clustering:
+
+```python
+cgram = Clustergram(range(1, 8), method='hierarchical', linkage='ward')
 cgram.fit(data)
 cgram.plot()
 ```

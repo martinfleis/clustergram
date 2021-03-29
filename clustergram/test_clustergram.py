@@ -294,6 +294,16 @@ def test_hierarchical():
     )
 
 
+def test_hierarchical_array():
+    clustergram = Clustergram(method="hierarchical")
+    clustergram.fit(data.values)
+
+    for i in range(1, 10):
+        assert clustergram.labels[i].nunique() == i
+    assert clustergram.labels.shape == (10, 9)
+    assert clustergram.labels.notna().all().all()
+
+
 def test_errors():
     with pytest.raises(ValueError):
         Clustergram(range(1, 3), backend="nonsense")
@@ -305,6 +315,8 @@ def test_errors():
         Clustergram(range(1, 3), method="hieararchical", backend="sklearn")
     with pytest.raises(ValueError):
         Clustergram(range(1, 3), method="gmm", backend="cuML")
+    with pytest.raises(ValueError):
+        Clustergram()
 
 
 def test_repr():

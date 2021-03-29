@@ -27,7 +27,7 @@ class Clustergram:
 
     Clustergram offers three backends for the computation - ``scikit-learn`` and
     ``scipy`` which use CPU and RAPIDS.AI ``cuML``, which uses GPU. Note that all
-    are optional dependencies, but you will need at least one of them to
+    are optional dependencies but you will need at least one of them to
     generate clustergram.
 
     Parameters

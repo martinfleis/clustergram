@@ -34,6 +34,7 @@ release = version
 extensions = ["sphinx.ext.autodoc", "numpydoc", "sphinx.ext.autosummary", "myst_parser"]
 
 autosummary_generate = True
+numpydoc_show_class_members = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

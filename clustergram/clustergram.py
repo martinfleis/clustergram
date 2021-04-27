@@ -64,8 +64,7 @@ class Clustergram:
         Additional arguments passed to the model (e.g. ``KMeans``),
         e.g. ``random_state``. Pass ``linkage`` to specify linkage method in
         case of hierarchical clustering (e.g. ``linkage='ward'``). See the
-        documentation of scipy for details:
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html#scipy.cluster.hierarchy.linkage
+        documentation of scipy for details.
 
 
     Attributes
@@ -471,7 +470,7 @@ class Clustergram:
 
         Returns
         -------
-        self.silhouette : pd.Series
+        silhouette : pd.Series
 
         Notes
         -----
@@ -540,7 +539,7 @@ class Clustergram:
 
         Returns
         -------
-        self.calinski_harabasz : pd.Series
+        calinski_harabasz : pd.Series
 
         Notes
         -----
@@ -608,7 +607,7 @@ class Clustergram:
 
         Returns
         -------
-        self.davies_bouldin : pd.Series
+        davies_bouldin : pd.Series
 
         Notes
         -----

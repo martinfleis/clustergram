@@ -8,7 +8,8 @@ Clustergram is a diagram proposed by Matthias Schonlau in his paper *[The cluste
 
 The clustergram was later implemented in R by [Tal Galili](https://www.r-statistics.com/2010/06/clustergram-visualization-and-diagnostics-for-cluster-analysis-r-code/), who also gives a thorough explanation of the concept.
 
-This is a Python translation of Tal's script written for `scikit-learn` and RAPIDS `cuML` implementations of K-Means, Mini Batch K-Means and Gaussian Mixture Model (scikit-learn only) clustering, plus hierarchical/agglomerative clustering using `SciPy`.
+This is a Python translation of Tal's script written for `scikit-learn` and RAPIDS `cuML` implementations of K-Means, Mini Batch K-Means and Gaussian Mixture Model (scikit-learn only) clustering, plus hierarchical/agglomerative clustering using `SciPy`. Alternatively, you can create clustergram using  `from_*` constructors based on alternative clustering algorithms.
+
 
 ## Getting started
 
@@ -142,6 +143,40 @@ Using Ward's hierarchical clustering:
 ```python
 cgram = Clustergram(range(1, 8), method='hierarchical', linkage='ward')
 cgram.fit(data)
+cgram.plot()
+```
+
+## Manual input
+
+Alternatively, you can create clustergram using `from_data` or  `from_centers` methods based on alternative clustering algorithms.
+
+Using `Clustergram.from_data` which creates cluster centers as mean or median values:
+
+```python
+data = numpy.array([[-1, -1, 0, 10], [1, 1, 10, 2], [0, 0, 20, 4]])
+labels = pandas.DataFrame({1: [0, 0, 0], 2: [0, 0, 1], 3: [0, 2, 1]})
+
+cgram = Clustergram.from_data(data, labels)
+cgram.plot()
+```
+
+Using `Clustergram.from_centers` based on explicit cluster centers.:
+
+```python
+labels = pandas.DataFrame({1: [0, 0, 0], 2: [0, 0, 1], 3: [0, 2, 1]})
+centers = {
+            1: np.array([[0, 0]]),
+            2: np.array([[-1, -1], [1, 1]]),
+            3: np.array([[-1, -1], [1, 1], [0, 0]]),
+        }
+cgram = Clustergram.from_centers(centers, labels)
+cgram.plot(pca_weighted=False)
+```
+
+To support PCA weighted plots you also need to pass data:
+
+```python
+cgram = Clustergram.from_centers(centers, labels, data=data)
 cgram.plot()
 ```
 

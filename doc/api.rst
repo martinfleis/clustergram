@@ -10,4 +10,4 @@ clustergram
 .. currentmodule:: clustergram
 
 .. autoclass:: Clustergram
-   :members: fit, plot, silhouette_score, calinski_harabasz_score, davies_bouldin_score
+   :members: fit, plot, from_data, from_centers, silhouette_score, calinski_harabasz_score, davies_bouldin_score

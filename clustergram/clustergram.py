@@ -30,6 +30,9 @@ class Clustergram:
     are optional dependencies but you will need at least one of them to
     generate clustergram.
 
+    Alternatively, you can create clustergram using ``from_data`` or
+    ``from_centers`` methods based on alternative clustering algorithms.
+
     Parameters
     ----------
     k_range : iterable (default None)
@@ -63,8 +66,7 @@ class Clustergram:
         Additional arguments passed to the model (e.g. ``KMeans``),
         e.g. ``random_state``. Pass ``linkage`` to specify linkage method in
         case of hierarchical clustering (e.g. ``linkage='ward'``). See the
-        documentation of scipy for details:
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html#scipy.cluster.hierarchy.linkage
+        documentation of scipy for details.
 
 
     Attributes
@@ -130,7 +132,8 @@ class Clustergram:
             self.backend = backend
 
         supported = ["kmeans", "gmm", "minibatchkmeans", "hierarchical"]
-        if method not in supported:
+        class_methods = ["from_centers", "from_data"]
+        if method not in supported and method not in class_methods:
             raise ValueError(
                 f"'{method}' is not a supported method. "
                 f"Only {supported} are supported now."
@@ -314,6 +317,143 @@ class Clustergram:
             self.labels[i] = lab - 1
             self.cluster_centers[i] = data.groupby(lab).mean().values
 
+    @classmethod
+    def from_centers(cls, cluster_centers, labels, data=None):
+        """Create clustergram based on cluster centers dictionary and labels DataFrame
+
+        Parameters
+        ----------
+
+        cluster_centers : dict
+            dictionary of cluster centers with keys encoding the number of clusters
+            and values being ``M``x````N`` arrays where ``M`` == key and ``N`` ==
+            number of variables in the original dataset.
+            Entries should be ordered based on keys.
+        labels : pandas.DataFrame
+            DataFrame with columns representing cluster labels and rows representing
+            observations. Columns must be equal to ``cluster_centers`` keys.
+        data : array-like (optional)
+            array used as an input of the clustering algorithm with ``N`` columns.
+            Required for `plot(pca_weighted=True)` plotting option. Otherwise only
+            `plot(pca_weighted=False)` is available.
+
+        Returns
+        -------
+        clustegram.Clustergram
+
+        Notes
+        -----
+        The algortihm uses ``sklearn`` and ``pandas`` to generate clustergram.
+        GPU option is not implemented.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> import numpy as np
+        >>> labels = pd.DataFrame({1: [0, 0, 0], 2: [0, 0, 1], 3: [0, 2, 1]})
+        >>> labels
+           1  2  3
+        0  0  0  0
+        1  0  0  2
+        2  0  1  1
+        >>> centers = {
+        ...             1: np.array([[0, 0]]),
+        ...             2: np.array([[-1, -1], [1, 1]]),
+        ...             3: np.array([[-1, -1], [1, 1], [0, 0]]),
+        ...         }
+        >>> cgram = Clustergram.from_centers(centers, labels)
+        >>> cgram.plot(pca_weighted=False)
+
+        >>> data = np.array([[-1, -1], [1, 1], [0, 0]])
+        >>> cgram = Clustergram.from_centers(centers, labels, data=data)
+        >>> cgram.plot()
+
+        """
+        if not (list(cluster_centers.keys()) == labels.columns).all():
+            raise ValueError("'cluster_centers' keys do not match 'labels' columns.")
+
+        cgram = cls(k_range=list(cluster_centers.keys()), method="from_centers")
+
+        cgram.cluster_centers = cluster_centers
+        cgram.labels = labels
+        cgram.backend = "sklearn"
+
+        if data is not None:
+            cgram.data = data
+
+        return cgram
+
+    @classmethod
+    def from_data(cls, data, labels, method="mean"):
+        """Create clustergram based on data and labels DataFrame
+
+        Cluster centers are created as mean values or median values as a
+        groupby function over data using individual labels.
+
+        Parameters
+        ----------
+
+        data : array-like
+            array used as an input of the clustering algorithm in the ``(M, N)`` shape
+            where ``M`` == number of observations and ``N`` == number of variables
+        labels : pandas.DataFrame
+            DataFrame with columns representing cluster labels and rows representing
+            observations. Columns must be equal to ``cluster_centers`` keys.
+        method : {'mean', 'median'}, default 'mean'
+            Method of computation of cluster centres.
+
+        Returns
+        -------
+        clustegram.Clustergram
+
+        Notes
+        -----
+        The algortihm uses ``sklearn`` and ``pandas`` to generate clustergram.
+        GPU option is not implemented.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> import numpy as np
+        >>> data = np.array([[-1, -1, 0, 10], [1, 1, 10, 2], [0, 0, 20, 4]])
+        >>> data
+        array([[-1, -1,  0, 10],
+               [ 1,  1, 10,  2],
+               [ 0,  0, 20,  4]])
+        >>> labels = pd.DataFrame({1: [0, 0, 0], 2: [0, 0, 1], 3: [0, 2, 1]})
+        >>> labels
+           1  2  3
+        0  0  0  0
+        1  0  0  2
+        2  0  1  1
+        >>> cgram = Clustergram.from_data(data, labels)
+        >>> cgram.plot()
+
+        """
+
+        cgram = cls(k_range=list(labels.columns), method="from_data")
+
+        cgram.cluster_centers = {}
+        cgram.data = data
+
+        if not isinstance(data, pd.DataFrame):
+            data = pd.DataFrame(data)
+
+        for i in cgram.k_range:
+            if method == "mean":
+                cgram.cluster_centers[i] = data.groupby(labels[i]).mean().values
+            elif method == "median":
+                cgram.cluster_centers[i] = data.groupby(labels[i]).median().values
+            else:
+                raise ValueError(
+                    f"'{method}' is not supported. Use 'mean' or 'median'."
+                )
+
+        cgram.labels = labels
+        cgram.backend = "sklearn"
+
+        return cgram
+
     def silhouette_score(self, **kwargs):
         """
         Compute the mean Silhouette Coefficient of all samples.
@@ -332,7 +472,7 @@ class Clustergram:
 
         Returns
         -------
-        self.silhouette : pd.Series
+        silhouette : pd.Series
 
         Notes
         -----
@@ -401,7 +541,7 @@ class Clustergram:
 
         Returns
         -------
-        self.calinski_harabasz : pd.Series
+        calinski_harabasz : pd.Series
 
         Notes
         -----
@@ -469,7 +609,7 @@ class Clustergram:
 
         Returns
         -------
-        self.davies_bouldin : pd.Series
+        davies_bouldin : pd.Series
 
         Notes
         -----

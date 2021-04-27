@@ -589,3 +589,98 @@ def test_davies_bouldin_score_cuml():
             name="davies_bouldin_score",
         ),
     )
+
+
+def test_from_data_mean():
+    data = np.array([[-1, -1, 0, 10], [1, 1, 10, 2], [0, 0, 20, 4]])
+    labels = pd.DataFrame({1: [0, 0, 0], 2: [0, 0, 1], 3: [0, 2, 1]})
+    clustergram = Clustergram.from_data(data, labels)
+
+    assert clustergram.plot_data_pca.empty
+    ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
+    ax.get_geometry() == (1, 1, 1)
+
+    assert clustergram.plot_data.empty
+    ax = clustergram.plot(pca_weighted=False)
+    ax.get_geometry() == (1, 1, 1)
+
+    assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
+        -7.820673888000655, rel=1e-15
+    )
+    assert clustergram.plot_data.mean().mean() == pytest.approx(
+        3.8333333333333335, rel=1e-15
+    )
+
+
+def test_from_data_median():
+    data = np.array([[-1, -1, 0, 10], [1, 1, 10, 2], [0, 0, 20, 4]])
+    labels = pd.DataFrame({1: [0, 0, 0], 2: [0, 0, 1], 3: [0, 2, 1]})
+    clustergram = Clustergram.from_data(data, labels, method="median")
+
+    assert clustergram.plot_data_pca.empty
+    ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
+    ax.get_geometry() == (1, 1, 1)
+
+    assert clustergram.plot_data.empty
+    ax = clustergram.plot(pca_weighted=False)
+    ax.get_geometry() == (1, 1, 1)
+
+    assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
+        -7.958519683972767, rel=1e-15
+    )
+    assert clustergram.plot_data.mean().mean() == pytest.approx(
+        3.7222222222222228, rel=1e-15
+    )
+
+
+def test_from_data_nonsense():
+    data = np.array([[-1, -1, 0, 10], [1, 1, 10, 2], [0, 0, 20, 4]])
+    labels = pd.DataFrame({1: [0, 0, 0], 2: [0, 0, 1], 3: [0, 2, 1]})
+    with pytest.raises(ValueError, match="'nonsense' is not supported."):
+        Clustergram.from_data(data, labels, method="nonsense")
+
+
+def test_from_centers():
+    labels = pd.DataFrame({1: [0, 0, 0], 2: [0, 0, 1], 3: [0, 2, 1]})
+    centers = {
+        1: np.array([[0, 0]]),
+        2: np.array([[-1, -1], [1, 1]]),
+        3: np.array([[-1, -1], [1, 1], [0, 0]]),
+    }
+    clustergram = Clustergram.from_centers(centers, labels)
+
+    assert clustergram.plot_data.empty
+    ax = clustergram.plot(pca_weighted=False)
+    ax.get_geometry() == (1, 1, 1)
+
+    assert clustergram.plot_data.mean().mean() == pytest.approx(
+        -0.1111111111111111, rel=1e-15
+    )
+
+    labels = pd.DataFrame({2: [0, 0, 0], 3: [0, 0, 1], 4: [0, 2, 1]})
+    centers = {
+        1: np.array([[0, 0]]),
+        2: np.array([[-1, -1], [1, 1]]),
+        3: np.array([[-1, -1], [1, 1], [0, 0]]),
+    }
+    with pytest.raises(ValueError, match="'cluster_centers' keys do not match"):
+        Clustergram.from_centers(centers, labels)
+
+
+def test_from_centers_data():
+    labels = pd.DataFrame({1: [0, 0, 0], 2: [0, 0, 1], 3: [0, 2, 1]})
+    centers = {
+        1: np.array([[0, 0]]),
+        2: np.array([[-1, -1], [1, 1]]),
+        3: np.array([[-1, -1], [1, 1], [0, 0]]),
+    }
+    data = np.array([[-1, -1], [1, 1], [0, 0]])
+    clustergram = Clustergram.from_centers(centers, labels, data)
+
+    assert clustergram.plot_data_pca.empty
+    ax = clustergram.plot(pca_weighted=True)
+    ax.get_geometry() == (1, 1, 1)
+
+    assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
+        -0.15713484026367722, rel=1e-15
+    )

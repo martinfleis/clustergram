@@ -444,7 +444,9 @@ class Clustergram:
             elif method == "median":
                 cgram.cluster_centers[i] = data.groupby(labels[i]).median().values
             else:
-                raise ValueError(f"{method} is not supported. Use 'mean' or 'median'.")
+                raise ValueError(
+                    f"'{method}' is not supported. Use 'mean' or 'median'."
+                )
 
         cgram.labels = labels
         cgram.backend = "sklearn"

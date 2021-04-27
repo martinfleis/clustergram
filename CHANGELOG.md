@@ -1,6 +1,17 @@
 Changelog
 =========
 
+Version 0.4.0 (April 27, 2021)
+------------------------------
+
+Spring comes with native hierarchical clustering and the ability to create clustergam from a manual input.
+
+Enhancements:
+
+- ENH: support hierarchical clustering using scipy (#11)
+- ENH: from_data and from_centers methods (#12)
+
+
 Version 0.3.0 (January 31, 2021)
 --------------------------------
 

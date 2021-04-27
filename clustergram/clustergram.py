@@ -13,7 +13,6 @@ Original idea is by Matthias Schonlau - http://www.schonlau.net/clustergram.html
 from time import time
 import pandas as pd
 import numpy as np
-import sklearn
 
 
 class Clustergram:
@@ -30,6 +29,9 @@ class Clustergram:
     ``scipy`` which use CPU and RAPIDS.AI ``cuML``, which uses GPU. Note that all
     are optional dependencies but you will need at least one of them to
     generate clustergram.
+
+    Alternatively, you can create clustergram using ``from_data`` or
+    ``from_centers`` methods based on alternative clustering algorithms.
 
     Parameters
     ----------

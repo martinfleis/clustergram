@@ -670,16 +670,21 @@ class Clustergram:
         from sklearn.decomposition import PCA
 
         self.pca = PCA(n_components=1, **pca_kwargs).fit(self.data).components_[0]
+        self.link_pca = {}
 
         for n in self.k_range:
             means = self.cluster_centers[n].dot(self.pca)
             self.plot_data_pca[n] = np.take(means, self.labels[n].values)
+            self.link_pca[n] = dict(zip(means, range(n)))
 
     def _compute_means_sklearn(self):
         """Compute cluster mean values using sklearn backend"""
+        self.link = {}
+
         for n in self.k_range:
             means = np.mean(self.cluster_centers[n], axis=1)
             self.plot_data[n] = np.take(means, self.labels[n].values)
+            self.link[n] = dict(zip(means, range(n)))
 
     def _compute_pca_means_cuml(self, **pca_kwargs):
         """Compute PCA weighted cluster mean values using cuML backend"""
@@ -688,6 +693,7 @@ class Clustergram:
         import cupy as cp
 
         self.pca = PCA(n_components=1, **pca_kwargs).fit(self.data)
+        self.link_pca = {}
 
         for n in self.k_range:
             if isinstance(self.data, cudf.DataFrame):
@@ -697,17 +703,38 @@ class Clustergram:
             else:
                 means = self.cluster_centers[n].dot(self.pca.components_[0])
             self.plot_data_pca[n] = cp.take(means, self.labels[n].values)
+            self.link_pca[n] = dict(zip(means.tolist(), range(n)))
 
     def _compute_means_cuml(self):
         """Compute cluster mean values using cuML backend"""
         import cupy as cp
 
+        self.link = {}
+
         for n in self.k_range:
             means = self.cluster_centers[n].mean(axis=1)
             if isinstance(means, (cp.core.core.ndarray, np.ndarray)):
                 self.plot_data[n] = means.take(self.labels[n].values)
+                self.link[n] = dict(zip(means.tolist(), range(n)))
             else:
                 self.plot_data[n] = means.take(self.labels[n].values).to_array()
+                self.link[n] = dict(zip(means.values.tolist(), range(n)))
+
+    def _compute_means(self, pca_weighted, pca_kwargs):
+        if pca_weighted:
+            if self.plot_data_pca.empty:
+                pca_kwargs.pop("n_components", None)
+
+                if self.backend in ["sklearn", "scipy"]:
+                    self._compute_pca_means_sklearn(**pca_kwargs)
+                else:
+                    self._compute_pca_means_cuml(**pca_kwargs)
+        else:
+            if self.plot_data.empty:
+                if self.backend in ["sklearn", "scipy"]:
+                    self._compute_means_sklearn()
+                else:
+                    self._compute_means_cuml()
 
     def plot(
         self,
@@ -769,20 +796,7 @@ class Clustergram:
         Those are computed on the first call of each option (pca_weighted=True/False).
 
         """
-        if pca_weighted:
-            if self.plot_data_pca.empty:
-                pca_kwargs.pop("n_components", None)
-
-                if self.backend in ["sklearn", "scipy"]:
-                    self._compute_pca_means_sklearn(**pca_kwargs)
-                else:
-                    self._compute_pca_means_cuml(**pca_kwargs)
-        else:
-            if self.plot_data.empty:
-                if self.backend in ["sklearn", "scipy"]:
-                    self._compute_means_sklearn()
-                else:
-                    self._compute_means_cuml()
+        self._compute_means(pca_weighted, pca_kwargs)
 
         if ax is None:
             import matplotlib.pyplot as plt
@@ -857,3 +871,177 @@ class Clustergram:
             except (KeyError, ValueError):
                 pass
         return ax
+
+    def bokeh(
+        self,
+        fig=None,
+        size=1,
+        line_width=1,
+        cluster_style=None,
+        line_style=None,
+        figsize=None,
+        pca_weighted=True,
+        pca_kwargs={},
+    ):
+        """
+        Generate interactive clustergram plot based on cluster centre mean values using
+        Bokeh.
+
+        Requires ``bokeh``.
+
+        Parameters
+        ----------
+        fig : bokeh.plotting.figure.Figure (default None)
+            bokeh figure on which to draw the plot
+        size : float (default 1)
+            multiplier of the size of a cluster centre indication. Size is determined as
+            ``50 / count`` of observations in a cluster multiplied by ``size``.
+        line_width : float (default 1)
+            multiplier of the linewidth of a branch. Line width is determined as
+            ``50 / count`` of observations in a branch multiplied by `line_width`.
+        cluster_style : dict (default None)
+            Style options to be passed on to the cluster centre plot, such
+            as ``color``, ``line_width``, ``line_color`` or ``alpha``.
+        line_style : dict (default None)
+            Style options to be passed on to branches, such
+            as ``color``, ``line_width``, ``line_color`` or ``alpha``.
+        figsize : tuple of integers (default None)
+            Size of the resulting ``bokeh.plotting.figure.Figure``. If the argument
+            ``figure`` is given explicitly, ``figsize`` is ignored.
+        pca_weighted : bool (default True)
+            Whether use PCA weighted mean of clusters or standard mean of clusters on
+            y-axis.
+        pca_kwargs : dict (default {})
+            Additional arguments passed to the PCA object,
+            e.g. ``svd_solver``. Applies only if ``pca_weighted=True``.
+
+        Returns
+        -------
+        figure : bokeh figure instance
+
+        Examples
+        --------
+        >>> from bokeh.plotting import show
+        >>> c_gram = clustergram.Clustergram(range(1, 9))
+        >>> c_gram.fit(data)
+        >>> f = c_gram.bokeh()
+        >>> show(f)
+
+        For the best experience in Jupyter notebooks, specify bokeh output first:
+
+        >>> from bokeh.io import output_notebook
+        >>> from bokeh.plotting import show
+        >>> output_notebook()
+
+        >>> c_gram = clustergram.Clustergram(range(1, 9))
+        >>> c_gram.fit(data)
+        >>> f = c_gram.bokeh()
+        >>> show(f)
+
+        Notes
+        -----
+        Before plotting, ``Clustergram`` needs to compute the summary values.
+        Those are computed on the first call of each option (pca_weighted=True/False).
+
+        """
+        try:
+            from bokeh.plotting import figure, ColumnDataSource
+            from bokeh.models import HoverTool
+        except ImportError:
+            raise ImportError("'bokeh' is required to use bokeh plotting backend.")
+
+        self._compute_means(pca_weighted, pca_kwargs)
+
+        if pca_weighted:
+            means = self.plot_data_pca
+            links = self.link_pca
+            ylabel = "PCA weighted mean of the clusters"
+        else:
+            means = self.plot_data
+            links = self.link
+            ylabel = "Mean of the clusters"
+
+        if fig is None:
+            if figsize is None:
+                figsize = (600, 500)
+            fig = figure(
+                plot_width=figsize[0],
+                plot_height=figsize[1],
+                x_axis_label="Number of clusters (k)",
+                y_axis_label=ylabel,
+            )
+
+        if cluster_style is None:
+            cluster_style = {}
+        cl_c = cluster_style.pop("color", "red")
+        cl_ec = cluster_style.pop("line_color", "white")
+        cl_lw = cluster_style.pop("line_width", 2)
+
+        if line_style is None:
+            line_style = {}
+        l_c = line_style.pop("color", "black")
+        line_cap = line_style.pop("line_cap", "round")
+
+        x = []
+        y = []
+        sizes = []
+        count = []
+        ratio = []
+        cluster_labels = []
+
+        total = len(means)
+        for i in self.k_range:
+            cl = means[i].value_counts()
+            x += [i] * i
+            y += cl.index.values.tolist()
+            count += cl.values.tolist()
+            ratio += ((cl / total) * 100).values.tolist()
+            sizes += (cl * ((50 / len(means)) * size)).values.tolist()
+            cluster_labels += [links[i][x] for x in cl.index.values.tolist()]
+
+        source = ColumnDataSource(
+            data=dict(
+                x=x,
+                y=y,
+                size=sizes,
+                count=count,
+                ratio=ratio,
+                cluster_labels=cluster_labels,
+            )
+        )
+
+        tooltips = [
+            ("Number of observations", "@count (@ratio%)"),
+            ("Cluster label", "@cluster_labels"),
+        ]
+
+        stop = max(self.k_range)
+        for i in self.k_range:
+            if i < stop:
+                sub = means.groupby([i, i + 1]).count().reset_index()
+                if self.backend == "cuML":
+                    sub = sub.to_pandas()
+                for r in sub.itertuples():
+                    fig.line(
+                        [i, i + 1],
+                        [r[1], r[2]],
+                        line_width=r[3] * ((50 / len(means)) * line_width),
+                        line_cap=line_cap,
+                        color=l_c,
+                        **line_style,
+                    )
+
+        circle = fig.circle(
+            "x",
+            "y",
+            size="size",
+            source=source,
+            color=cl_c,
+            line_color=cl_ec,
+            line_width=cl_lw,
+            **cluster_style,
+        )
+        hover = HoverTool(tooltips=tooltips, renderers=[circle])
+        fig.add_tools(hover)
+
+        return fig

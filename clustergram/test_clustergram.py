@@ -2,6 +2,8 @@ from sklearn.datasets import make_blobs
 import pandas as pd
 import numpy as np
 import pytest
+from bokeh.embed import json_item
+
 
 try:
     import cudf
@@ -135,7 +137,7 @@ def test_sklearn_gmm():
         2.2697082687156915,
     ]
     assert expected == [
-        pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-12)
+        pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-6)
         for x in range(1, 8)
     ]
 
@@ -684,3 +686,66 @@ def test_from_centers_data():
     assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
         -0.15713484026367722, rel=1e-15
     )
+
+
+def test_bokeh():
+    clustergram = Clustergram(range(1, 8), backend="sklearn", random_state=random_state)
+    clustergram.fit(data)
+
+    f = clustergram.bokeh(pca_kwargs=dict(random_state=random_state))
+    out = str(json_item(f, "clustergram"))
+
+    assert out.count("data") == 56
+    assert out.count("'x'") == 140
+    assert out.count("'y'") == 140
+    assert "cluster_labels" in out
+    assert "count" in out
+    assert "ratio" in out
+    assert "size" in out
+
+    f = clustergram.bokeh(pca_weighted=False)
+    out = str(json_item(f, "clustergram"))
+
+    assert out.count("data") == 56
+    assert out.count("'x'") == 140
+    assert out.count("'y'") == 140
+    assert "cluster_labels" in out
+    assert "count" in out
+    assert "ratio" in out
+    assert "size" in out
+
+
+@pytest.mark.skipif(
+    not RAPIDS,
+    reason="RAPIDS not available.",
+)
+def test_bokeh_cuml():
+    n_samples = 10
+    n_features = 2
+
+    n_clusters = 5
+    random_state = 0
+
+    device_data, device_labels = cuml.make_blobs(
+        n_samples=n_samples,
+        n_features=n_features,
+        centers=n_clusters,
+        random_state=random_state,
+        cluster_std=0.1,
+    )
+
+    data = cudf.DataFrame(device_data)
+
+    clustergram = Clustergram(range(1, 8), backend="cuML", random_state=random_state)
+    clustergram.fit(data)
+
+    f = clustergram.bokeh()
+    out = str(json_item(f, "clustergram"))
+
+    assert out.count("data") == 58
+    assert out.count("'x'") == 145
+    assert out.count("'y'") == 145
+    assert "cluster_labels" in out
+    assert "count" in out
+    assert "ratio" in out
+    assert "size" in out

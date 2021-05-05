@@ -703,20 +703,22 @@ class Clustergram:
             else:
                 means = self.cluster_centers[n].dot(self.pca.components_[0])
             self.plot_data_pca[n] = cp.take(means, self.labels[n].values)
-            self.link_pca[n] = dict(zip(means, range(n)))
+            self.link_pca[n] = dict(zip(means.tolist(), range(n)))
 
     def _compute_means_cuml(self):
         """Compute cluster mean values using cuML backend"""
         import cupy as cp
+
         self.link = {}
 
         for n in self.k_range:
             means = self.cluster_centers[n].mean(axis=1)
             if isinstance(means, (cp.core.core.ndarray, np.ndarray)):
                 self.plot_data[n] = means.take(self.labels[n].values)
+                self.link[n] = dict(zip(means.tolist(), range(n)))
             else:
                 self.plot_data[n] = means.take(self.labels[n].values).to_array()
-            self.link[n] = dict(zip(means, range(n)))
+                self.link[n] = dict(zip(means.values.tolist(), range(n)))
 
     def _compute_means(self, pca_weighted, pca_kwargs):
         if pca_weighted:
@@ -991,11 +993,11 @@ class Clustergram:
         for i in self.k_range:
             cl = means[i].value_counts()
             x += [i] * i
-            y += cl.index.to_list()
+            y += cl.index.values.tolist()
             count += cl.values.tolist()
             ratio += ((cl / total) * 100).values.tolist()
-            sizes += (cl * ((50 / len(means)) * size)).to_list()
-            cluster_labels += [links[i][x] for x in cl.index]
+            sizes += (cl * ((50 / len(means)) * size)).values.tolist()
+            cluster_labels += [links[i][x] for x in cl.index.values.tolist()]
 
         source = ColumnDataSource(
             data=dict(
@@ -1017,6 +1019,8 @@ class Clustergram:
         for i in self.k_range:
             if i < stop:
                 sub = means.groupby([i, i + 1]).count().reset_index()
+                if self.backend == "cuML":
+                    sub = sub.to_pandas()
                 for r in sub.itertuples():
                     fig.line(
                         [i, i + 1],

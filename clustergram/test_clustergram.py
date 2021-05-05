@@ -137,7 +137,7 @@ def test_sklearn_gmm():
         2.2697082687156915,
     ]
     assert expected == [
-        pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-12)
+        pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-6)
         for x in range(1, 8)
     ]
 
@@ -704,6 +704,65 @@ def test_bokeh():
         "'size': [50.0, 40.0, 10.0, 30.0, 10.0, 10.0, 20.0",
         "'x': [1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5",
         "'y': [-0.21726383145643724, -2.438661983909207, 8.668328778354642",
+    ]
+
+    for s in strings:
+        assert s in out
+
+    f = clustergram.bokeh(pca_weighted=False)
+    out = str(json_item(f, "clustergram"))
+
+    strings = [
+        "'attributes': {'data': {'x': [5, 6], 'y': [0.6344791426044951, 0.6684377221730675]",  # noqa
+        "'data': {'x': [1, 2], 'y': [2.3448529748438847, 3.5425606095564293]",
+        "'cluster_labels': [0, 0, 1, 2, 0, 1, 3, 1, 0, 2, 1, 0, 4, 2, 3, 1, 0",
+        "'count': [10, 8, 2, 6, 2, 2, 4, 2,",
+        "'ratio': [100.0, 80.0, 20.0, 60.0, 20.0, 20.0",
+        "'size': [50.0, 40.0, 10.0, 30.0, 10.0, 10.0, 20.0, 10.0",
+        "'x': [1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5,",
+        "'y': [2.3448529748438847, 2.0454260661657484, 3.5425606095564293",
+    ]
+
+    for s in strings:
+        assert s in out
+
+
+@pytest.mark.skipif(
+    not RAPIDS,
+    reason="RAPIDS not available.",
+)
+def test_bokeh_cuml():
+    n_samples = 10
+    n_features = 2
+
+    n_clusters = 5
+    random_state = 0
+
+    device_data, device_labels = cuml.make_blobs(
+        n_samples=n_samples,
+        n_features=n_features,
+        centers=n_clusters,
+        random_state=random_state,
+        cluster_std=0.1,
+    )
+
+    data = cudf.DataFrame(device_data)
+
+    clustergram = Clustergram(range(1, 8), backend="cuML", random_state=random_state)
+    clustergram.fit(data)
+
+    f = clustergram.bokeh()
+    out = str(json_item(f, "clustergram"))
+
+    strings = [
+        "'attributes': {'data': {'x': [4, 5], 'y': [-8.076885223388672, -8.050299644470215]",  # noqa
+        "'data': {'x': [4, 5], 'y': [-0.5628390312194824, -0.5628390312194824]",
+        "'cluster_labels': [0, 1, 0, 0, 2, 1, 2, 3, 1, 0, 3, 1, 2, 4",
+        "'count': [10, 7, 3, 4, 3, 3, 3, 3, 3, 1, 3, 3, 2, 1,",
+        "'ratio': [100.0, 70.0, 30.0, 40.0, 30.0, 30.0, 30.0,",
+        "'size': [50.0, 35.0, 15.0, 20.0, 15.0, 15.0,",
+        "'x': [1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5",
+        "'y': [1.1016589403152466, -3.7701244354248047, 12.469154357910156",
     ]
 
     for s in strings:

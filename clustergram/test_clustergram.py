@@ -2,6 +2,8 @@ from sklearn.datasets import make_blobs
 import pandas as pd
 import numpy as np
 import pytest
+from bokeh.embed import json_item
+
 
 try:
     import cudf
@@ -684,3 +686,25 @@ def test_from_centers_data():
     assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
         -0.15713484026367722, rel=1e-15
     )
+
+
+def test_bokeh():
+    clustergram = Clustergram(range(1, 8), backend="sklearn", random_state=random_state)
+    clustergram.fit(data)
+
+    f = clustergram.bokeh()
+    out = str(json_item(f, "clustergram"))
+
+    strings = [
+        "'attributes': {'data': {'x': [5, 6], 'y': [-3.111385508584995, -3.2699904570818727]",  # noqa
+        "'data': {'x': [1, 2], 'y': [-0.21726383145643724, -2.438661983909207]",
+        "'cluster_labels': [0, 0, 1, 2, 1, 0, 3, 2, 0,",
+        "'count': [10, 8, 2, 6, 2, 2, 4, 2, 2, 2, 2, 2, 2",
+        "'ratio': [100.0, 80.0, 20.0, 60.0, 20.0, 20.0, 40.0",
+        "'size': [50.0, 40.0, 10.0, 30.0, 10.0, 10.0, 20.0",
+        "'x': [1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5",
+        "'y': [-0.21726383145643724, -2.438661983909207, 8.668328778354642",
+    ]
+
+    for s in strings:
+        assert s in out

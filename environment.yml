@@ -8,6 +8,7 @@ dependencies:
   - matplotlib
   - clustergram
   - seaborn
+  - bokeh
   - pip
   - pip:
     - urbangrammar-graphics

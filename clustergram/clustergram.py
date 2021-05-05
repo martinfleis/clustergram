@@ -161,7 +161,12 @@ class Clustergram:
             self.plot_data_pca = pd.DataFrame()
             self.plot_data = pd.DataFrame()
         else:
-            import cudf
+            try:
+                import cudf
+            except (ImportError, ModuleNotFoundError):
+                raise ImportError(
+                    "cuML, cuDF and cupy packages are required to use `cuML` backend."
+                )
 
             self.plot_data_pca = cudf.DataFrame()
             self.plot_data = cudf.DataFrame()

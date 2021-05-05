@@ -1,4 +1,0 @@
-numpydoc
-pydata_sphinx_theme
-sphinx>3
-myst-parser

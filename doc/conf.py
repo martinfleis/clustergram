@@ -31,7 +31,15 @@ release = version
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "numpydoc", "sphinx.ext.autosummary", "myst_parser"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "numpydoc",
+    "sphinx.ext.autosummary",
+    "myst_nb",
+]
+
+jupyter_execute_notebooks = "force"
+execution_allow_errors = True
 
 autosummary_generate = True
 numpydoc_show_class_members = True

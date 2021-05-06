@@ -3,12 +3,15 @@ channels:
   - conda-forge
 dependencies:
   - scikit-learn
+  - scipy
   - pandas
   - numpy
   - bokeh
   - contextily  # for urbangrammar-graphics
+  - rasterio
+  - seaborn
+  - matplotlib
   - pip
   - pip:
     - urbangrammar-graphics
     - git+https://github.com/martinfleis/clustergram.git
-    - seaborn

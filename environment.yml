@@ -6,9 +6,10 @@ dependencies:
   - pandas
   - numpy
   - matplotlib
-  - clustergram
   - seaborn
   - bokeh
+  - contextily  # for urbangrammar-graphics
   - pip
   - pip:
     - urbangrammar-graphics
+    - git+https://github.com/martinfleis/clustergram.git

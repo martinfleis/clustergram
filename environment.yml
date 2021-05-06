@@ -5,12 +5,10 @@ dependencies:
   - scikit-learn
   - pandas
   - numpy
-  - matplotlib
-  - seaborn
   - bokeh
   - contextily  # for urbangrammar-graphics
-  - pillow  # for seaborn
   - pip
   - pip:
     - urbangrammar-graphics
     - git+https://github.com/martinfleis/clustergram.git
+    - seaborn

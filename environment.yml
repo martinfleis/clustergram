@@ -7,11 +7,11 @@ dependencies:
   - pandas
   - numpy
   - bokeh
-  - contextily  # for urbangrammar-graphics
-  - rasterio
+  # - contextily  # for urbangrammar-graphics
+  # - rasterio
   - seaborn
   - matplotlib
   - pip
   - pip:
-    - urbangrammar-graphics
+    # - urbangrammar-graphics
     - git+https://github.com/martinfleis/clustergram.git

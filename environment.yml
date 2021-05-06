@@ -9,6 +9,7 @@ dependencies:
   - seaborn
   - bokeh
   - contextily  # for urbangrammar-graphics
+  - pillow  # for seaborn
   - pip
   - pip:
     - urbangrammar-graphics

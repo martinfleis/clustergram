@@ -1,8 +1,8 @@
 .. _reference:
 
 
-clustergram API reference
-=========================
+API reference
+=============
 
 clustergram
 -----------

@@ -21,3 +21,6 @@ log
 _build
 
 coverage.xml
+doc/clustergram.html
+doc/clustergram.svg
+doc/clustergram.pickle

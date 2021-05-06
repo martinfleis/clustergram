@@ -18,3 +18,5 @@ dependencies:
   - rasterio
   - geoplot
   - folium
+  - pip:
+      - git+https://github.com/martinfleis/clustergram.git

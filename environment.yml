@@ -2,16 +2,19 @@ name: clustergram
 channels:
   - conda-forge
 dependencies:
-  - scikit-learn
-  - scipy
-  - pandas
-  - numpy
-  - bokeh
-  # - contextily  # for urbangrammar-graphics
-  # - rasterio
-  - seaborn
+  - geopandas
+  - shapely
+  - fiona
+  - pyproj
+  - pygeos
+  - rtree
+  - mapclassify
+  - libpysal
   - matplotlib
-  - pip
-  - pip:
-    # - urbangrammar-graphics
-    - git+https://github.com/martinfleis/clustergram.git
+  - geopy
+  - cartopy
+  - pyepsg
+  - contextily
+  - rasterio
+  - geoplot
+  - folium

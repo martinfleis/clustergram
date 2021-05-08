@@ -264,7 +264,12 @@ class Clustergram:
 
             if n == 1:
                 self.labels[n] = [0] * len(data)
-                self.cluster_centers[n] = cp.array([data.mean(axis=0)])
+                if isinstance(data, cudf.DataFrame):
+                    self.cluster_centers[n] = cudf.DataFrame(data.mean(axis=0)).T
+                elif isinstance(data, cp.ndarray):
+                    self.cluster_centers[n] = cp.array([data.mean(axis=0)])
+                else:
+                    self.cluster_centers[n] = np.array([data.mean(axis=0)])
 
                 print(
                     f"K={n} skipped. Mean computed from data directly."

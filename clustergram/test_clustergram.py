@@ -210,10 +210,10 @@ def test_cuml_kmeans():
     ax.get_geometry() == (1, 1, 1)
 
     assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
-        1.1016593081610544, rel=1e-15
+        1.1016593594032404, rel=1e-10
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
-        3.7674053737095425, rel=1e-15
+        3.7674053507191796, rel=1e-10
     )
 
     # cupy array
@@ -250,10 +250,10 @@ def test_cuml_kmeans():
     ax.get_geometry() == (1, 1, 1)
 
     assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
-        1.1016593081610544, rel=1e-15
+        1.1016593081610544, rel=1e-6
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
-        3.7674053737095425, rel=1e-15
+        3.7674053737095425, rel=1e-6
     )
 
 

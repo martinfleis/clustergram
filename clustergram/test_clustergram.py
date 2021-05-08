@@ -87,7 +87,7 @@ def test_sklearn_minibatchkmeans():
     assert clustergram.labels.notna().all().all()
 
     expected = [
-        2.35104516103195,
+        2.3448529748438847,
         2.7950777425566464,
         2.8277733533088534,
         2.522309579003138,
@@ -109,10 +109,10 @@ def test_sklearn_minibatchkmeans():
     ax.get_geometry() == (1, 1, 1)
 
     assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
-        -0.19729006113986378, rel=1e-15
+        -0.2074208059962391, rel=1e-15
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
-        2.3478208185941405, rel=1e-15
+        2.3469362205672746, rel=1e-15
     )
 
 
@@ -210,10 +210,10 @@ def test_cuml_kmeans():
     ax.get_geometry() == (1, 1, 1)
 
     assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
-        1.1016593081610544, rel=1e-15
+        1.1016593594032404, rel=1e-10
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
-        3.7674053737095425, rel=1e-15
+        3.7674053507191796, rel=1e-10
     )
 
     # cupy array
@@ -250,10 +250,10 @@ def test_cuml_kmeans():
     ax.get_geometry() == (1, 1, 1)
 
     assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
-        1.1016593081610544, rel=1e-15
+        1.1016593081610544, rel=1e-6
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
-        3.7674053737095425, rel=1e-15
+        3.7674053737095425, rel=1e-6
     )
 
 

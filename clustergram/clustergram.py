@@ -3,9 +3,6 @@ Clustergram - visualization and diagnostics for cluster analysis in Python
 
 Copyright (C) 2020-2021  Martin Fleischmann
 
-Clustergram is a Python implementation of R function written by Tal Galili.
-https://www.r-statistics.com/2010/06/clustergram-visualization-and-diagnostics-for-cluster-analysis-r-code/
-
 Original idea is by Matthias Schonlau - http://www.schonlau.net/clustergram.html.
 
 """
@@ -225,6 +222,17 @@ class Clustergram:
         self.cluster_centers = {}
 
         for n in self.k_range:
+
+            if n == 1:
+                self.labels[n] = [0] * len(data)
+                self.cluster_centers[n] = np.array([data.mean(axis=0)])
+
+                print(
+                    f"K={n} skipped. Mean computed from data directly."
+                ) if self.verbose else None
+
+                continue
+
             s = time()
             if minibatch:
                 results = MiniBatchKMeans(n_clusters=n, **self.engine_kwargs).fit(
@@ -243,6 +251,7 @@ class Clustergram:
         try:
             from cuml import KMeans
             import cudf
+            import cupy as cp
         except ImportError:
             raise ImportError(
                 "cuML, cuDF and cupy packages are required to use `cuML` backend."
@@ -252,6 +261,17 @@ class Clustergram:
         self.cluster_centers = {}
 
         for n in self.k_range:
+
+            if n == 1:
+                self.labels[n] = [0] * len(data)
+                self.cluster_centers[n] = cp.array([data.mean(axis=0)])
+
+                print(
+                    f"K={n} skipped. Mean computed from data directly."
+                ) if self.verbose else None
+
+                continue
+
             s = time()
             results = KMeans(n_clusters=n, **self.engine_kwargs).fit(data, **kwargs)
             self.labels[n] = results.labels_

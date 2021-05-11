@@ -10,6 +10,7 @@ The clustergram was later implemented in R by [Tal Galili](https://www.r-statist
 
 This is a Python translation of Tal's script written for `scikit-learn` and RAPIDS `cuML` implementations of K-Means, Mini Batch K-Means and Gaussian Mixture Model (scikit-learn only) clustering, plus hierarchical/agglomerative clustering using `SciPy`. Alternatively, you can create clustergram using  `from_*` constructors based on alternative clustering algorithms.
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinfleis/clustergram/HEAD?filepath=doc%2Fnotebooks)
 
 ## Getting started
 
@@ -66,10 +67,10 @@ maxdepth: 2
 caption: Documentation
 hidden: true
 ---
-introduction
-plotting
-methods
-evaluation
+notebooks/introduction
+notebooks/plotting
+notebooks/methods
+notebooks/evaluation
 api
 GitHub <https://github.com/martinfleis/clustergram>
 ```

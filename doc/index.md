@@ -72,5 +72,6 @@ notebooks/plotting
 notebooks/methods
 notebooks/evaluation
 api
+changelog
 GitHub <https://github.com/martinfleis/clustergram>
 ```

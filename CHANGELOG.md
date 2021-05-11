@@ -1,6 +1,20 @@
 Changelog
 =========
 
+Version 0.5.0 (May 11, 2021)
+----------------------------
+
+Clustergram now supports interactive plotting using a new `.bokeh()` method based on BokehJS. It
+can be handy for exploration of larger and more complex clustergrams or those with significant outliers.
+
+Enhancements:
+
+- ENH: support interactive bokeh plots (#14)
+- ENH: skip k=1 in K-Means implementations (#18)
+
++ documentation restructuring
+
+
 Version 0.4.0 (April 27, 2021)
 ------------------------------
 

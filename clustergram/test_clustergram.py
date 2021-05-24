@@ -642,6 +642,20 @@ def test_from_data_nonsense():
         Clustergram.from_data(data, labels, method="nonsense")
 
 
+def test_from_data_index():
+    data = pd.DataFrame(
+        np.array([[-1, -1, 0, 10], [1, 1, 10, 2], [0, 0, 20, 4]]), index=["a", "b", "c"]
+    )
+    labels = pd.DataFrame({1: [0, 0, 0], 2: [0, 0, 1], 3: [0, 2, 1]})
+    clustergram = Clustergram.from_data(data, labels)
+    clustergram.plot()
+    clustergram.plot(pca_weighted=False)
+
+    clustergram = Clustergram.from_data(data, labels, method="median")
+    clustergram.plot()
+    clustergram.plot(pca_weighted=False)
+
+
 def test_from_centers():
     labels = pd.DataFrame({1: [0, 0, 0], 2: [0, 0, 1], 3: [0, 2, 1]})
     centers = {

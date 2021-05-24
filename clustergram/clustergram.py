@@ -471,9 +471,11 @@ class Clustergram:
 
         for i in cgram.k_range:
             if method == "mean":
-                cgram.cluster_centers[i] = data.groupby(labels[i]).mean().values
+                cgram.cluster_centers[i] = data.groupby(labels[i].values).mean().values
             elif method == "median":
-                cgram.cluster_centers[i] = data.groupby(labels[i]).median().values
+                cgram.cluster_centers[i] = (
+                    data.groupby(labels[i].values).median().values
+                )
             else:
                 raise ValueError(
                     f"'{method}' is not supported. Use 'mean' or 'median'."

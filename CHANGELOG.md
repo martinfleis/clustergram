@@ -1,6 +1,16 @@
 Changelog
 =========
 
+Version 0.5.1 (May 24, 2021)
+----------------------------
+
+Bugfix for `from_data` method with non-default indices.
+
+Bugs:
+
+- BUG: cluster centers empty due to index mismatch (#19)
+
+
 Version 0.5.0 (May 11, 2021)
 ----------------------------
 

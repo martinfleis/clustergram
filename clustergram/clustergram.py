@@ -63,8 +63,8 @@ class Clustergram:
         Additional arguments passed to the model (e.g. ``KMeans``),
         e.g. ``random_state``. Pass ``linkage`` to specify linkage method in
         case of hierarchical clustering (e.g. ``linkage='ward'``). See the
-        documentation of scipy for details.
-
+        documentation of scipy for details. If ``method='gmm'``, you can pass
+        ``bic=True`` to store BIC value in ``Clustergram.bic``.
 
     Attributes
     ----------
@@ -75,6 +75,9 @@ class Clustergram:
         Dictionary with cluster centers for each iteration.
     linkage : scipy.cluster.hierarchy.linkage
         Linkage object for hierarchical methods.
+    bic : Series
+        Bayesian Information Criterion for each iteration for Gaussian Mixture Model.
+        Stored only if ``method='gmm'`` and ``bic=True``
 
 
     Examples
@@ -115,6 +118,8 @@ class Clustergram:
         # cleanup after API change
         kwargs.pop("pca_weighted", None)
         kwargs.pop("pca_kwargs", None)
+
+        self.store_bic = kwargs.pop("bic", False)
 
         if backend is None:
             backend = "scipy" if method == "hierarchical" else "sklearn"
@@ -301,6 +306,9 @@ class Clustergram:
         self.labels = pd.DataFrame()
         self.cluster_centers = {}
 
+        if self.store_bic:
+            self.bic = pd.Series()
+
         for n in self.k_range:
             s = time()
             results = GaussianMixture(n_components=n, **self.engine_kwargs).fit(
@@ -314,6 +322,9 @@ class Clustergram:
                     allow_singular=True,
                 ).logpdf(data)
                 centers[i, :] = data[np.argmax(density)]
+
+            if self.store_bic:
+                self.bic.loc[n] = results.bic(data)
 
             self.labels[n] = results.predict(data)
             self.cluster_centers[n] = centers

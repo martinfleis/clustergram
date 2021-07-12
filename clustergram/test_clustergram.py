@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import pytest
 from bokeh.embed import json_item
+from pandas.testing import assert_series_equal
 
 
 try:
@@ -155,6 +156,42 @@ def test_sklearn_gmm():
     assert clustergram.plot_data.mean().mean() == pytest.approx(
         2.4439850629293924, rel=1e-15
     )
+
+
+def test_bic():
+    clustergram = Clustergram(
+        range(1, 8),
+        backend="sklearn",
+        method="gmm",
+        random_state=random_state,
+        bic=True,
+    )
+    clustergram.fit(data)
+
+    expected = pd.Series(
+        [
+            108.288933,
+            72.266771,
+            45.635889,
+            2.815688,
+            -40.428612,
+            -46.188970,
+            -50.449904,
+        ],
+        index=range(1, 8),
+    )
+
+    assert_series_equal(expected, clustergram.bic, rtol=1e-6)
+
+    clustergram = Clustergram(
+        range(1, 8),
+        backend="sklearn",
+        method="gmm",
+        random_state=random_state,
+        bic=False,
+    )
+    clustergram.fit(data)
+    assert hasattr(clustergram, "bic") is False
 
 
 @pytest.mark.skipif(

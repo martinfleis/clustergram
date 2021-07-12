@@ -64,7 +64,7 @@ class Clustergram:
         e.g. ``random_state``. Pass ``linkage`` to specify linkage method in
         case of hierarchical clustering (e.g. ``linkage='ward'``). See the
         documentation of scipy for details. If ``method='gmm'``, you can pass
-        ``bic=True`` to store BIC value in ``clustergram.bic``.
+        ``bic=True`` to store BIC value in ``Clustergram.bic``.
 
     Attributes
     ----------

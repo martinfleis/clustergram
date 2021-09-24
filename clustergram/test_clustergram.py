@@ -747,8 +747,6 @@ def test_bokeh():
     out = str(json_item(f, "clustergram"))
 
     assert out.count("data") == 56
-    assert out.count("'x'") == 140
-    assert out.count("'y'") == 140
     assert "cluster_labels" in out
     assert "count" in out
     assert "ratio" in out
@@ -758,8 +756,6 @@ def test_bokeh():
     out = str(json_item(f, "clustergram"))
 
     assert out.count("data") == 56
-    assert out.count("'x'") == 140
-    assert out.count("'y'") == 140
     assert "cluster_labels" in out
     assert "count" in out
     assert "ratio" in out
@@ -794,8 +790,6 @@ def test_bokeh_cuml():
     out = str(json_item(f, "clustergram"))
 
     assert out.count("data") == 58
-    assert out.count("'x'") == 145
-    assert out.count("'y'") == 145
     assert "cluster_labels" in out
     assert "count" in out
     assert "ratio" in out

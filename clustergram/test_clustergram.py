@@ -17,10 +17,10 @@ except (ImportError, ModuleNotFoundError):
 
 from clustergram import Clustergram
 
-n_samples = 10
+n_samples = 100
 n_features = 2
 
-n_clusters = 5
+n_clusters = 8
 random_state = 0
 
 device_data, device_labels = make_blobs(
@@ -40,17 +40,17 @@ def test_sklearn_kmeans():
 
     for i in range(1, 8):
         assert clustergram.labels[i].nunique() == i
-    assert clustergram.labels.shape == (10, 7)
+    assert clustergram.labels.shape == (100, 7)
     assert clustergram.labels.notna().all().all()
 
     expected = [
-        2.3448529748438847,
-        2.793993337861089,
-        2.8270525934022026,
-        2.513999519667852,
-        2.344852974843884,
-        2.059790669470653,
-        2.271614946625764,
+        1.439891622331535,
+        -2.809248339265837,
+        -0.9554163965815223,
+        0.15829646201444203,
+        0.626698921291375,
+        0.9155105021035385,
+        1.0238657347680074,
     ]
     assert expected == [
         pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-12)
@@ -66,10 +66,10 @@ def test_sklearn_kmeans():
     ax.get_geometry() == (1, 1, 1)
 
     assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
-        -0.21726383145643727, rel=1e-15
+        -2.095277953205114, rel=1e-15
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
-        2.3448529748438847, rel=1e-15
+        1.4398916223315354, rel=1e-15
     )
 
 
@@ -84,17 +84,17 @@ def test_sklearn_minibatchkmeans():
 
     for i in range(1, 8):
         assert clustergram.labels[i].nunique() == i
-    assert clustergram.labels.shape == (10, 7)
+    assert clustergram.labels.shape == (100, 7)
     assert clustergram.labels.notna().all().all()
 
     expected = [
-        2.3448529748438847,
-        2.7950777425566464,
-        2.8277733533088534,
-        2.522309579003138,
-        2.3452078554650075,
-        2.0602593594306526,
-        2.2717280475246584,
+        1.439891622331535,
+        1.5942431676314943,
+        -0.9391362578715787,
+        0.16457587659721762,
+        0.7988407523191436,
+        0.9230637622852088,
+        1.0250449911587773,
     ]
     assert expected == [
         pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-12)
@@ -110,10 +110,10 @@ def test_sklearn_minibatchkmeans():
     ax.get_geometry() == (1, 1, 1)
 
     assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
-        -0.2074208059962391, rel=1e-15
+        -2.153978086091386, rel=1e-15
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
-        2.3469362205672746, rel=1e-15
+        1.477158426841248, rel=1e-15
     )
 
 
@@ -125,17 +125,17 @@ def test_sklearn_gmm():
 
     for i in range(1, 8):
         assert clustergram.labels[i].nunique() == i
-    assert clustergram.labels.shape == (10, 7)
+    assert clustergram.labels.shape == (100, 7)
     assert clustergram.labels.notna().all().all()
 
     expected = [
-        2.6841643400794335,
-        3.1705471246923214,
-        2.52976769800815,
-        2.74946247582996,
-        2.333257525098582,
-        2.0444680314214723,
-        2.2697082687156915,
+        1.4886908509157464,
+        -2.8599808770366817,
+        -0.8823883211732156,
+        0.18416419702253917,
+        0.08229356227237798,
+        0.6537149985640699,
+        0.927345926721354,
     ]
     assert expected == [
         pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-6)
@@ -151,10 +151,10 @@ def test_sklearn_gmm():
     ax.get_geometry() == (1, 1, 1)
 
     assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
-        -0.5099395641282745, rel=1e-15
+        -1.9629843968429452, rel=1e-15
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
-        2.4439850629293924, rel=1e-15
+        1.3321040444661392, rel=1e-15
     )
 
 
@@ -170,13 +170,13 @@ def test_bic():
 
     expected = pd.Series(
         [
-            108.288933,
-            72.266771,
-            45.635889,
-            2.815688,
-            -40.428612,
-            -46.188970,
-            -50.449904,
+            1226.7924019554766,
+            948.6374834781362,
+            800.1788609508928,
+            687.5987056807201,
+            497.2770114251739,
+            402.1340827435864,
+            306.6669136240255,
         ],
         index=range(1, 8),
     )
@@ -300,17 +300,17 @@ def test_hierarchical():
 
     for i in range(1, 8):
         assert clustergram.labels[i].nunique() == i
-    assert clustergram.labels.shape == (10, 7)
+    assert clustergram.labels.shape == (100, 7)
     assert clustergram.labels.notna().all().all()
 
     expected = [
-        2.344852974843885,
-        2.793993337861089,
-        2.827052593402202,
-        2.513999519667852,
-        2.3448529748438847,
-        2.059790669470653,
-        2.2716149466257645,
+        1.4398916223315354,
+        -2.8092483392658374,
+        -0.7499055624802712,
+        0.28659658912247143,
+        0.7961494117071617,
+        0.9155105021035381,
+        1.023865734768007,
     ]
     assert expected == [
         pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-12)
@@ -326,20 +326,20 @@ def test_hierarchical():
     ax.get_geometry() == (1, 1, 1)
 
     assert clustergram.plot_data_pca.mean().mean() == pytest.approx(
-        -0.2172638314564372, rel=1e-15
+        -2.0952779532051142, rel=1e-15
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
-        2.3448529748438847, rel=1e-15
+        1.4398916223315354, rel=1e-15
     )
 
 
 def test_hierarchical_array():
-    clustergram = Clustergram(method="hierarchical")
+    clustergram = Clustergram(method="hierarchical", k_range=range(1, 10))
     clustergram.fit(data.values)
 
     for i in range(1, 10):
         assert clustergram.labels[i].nunique() == i
-    assert clustergram.labels.shape == (10, 9)
+    assert clustergram.labels.shape == (100, 9)
     assert clustergram.labels.notna().all().all()
 
 
@@ -374,7 +374,14 @@ def test_silhouette_score():
     pd.testing.assert_series_equal(
         clustergram.silhouette_score(),
         pd.Series(
-            [0.70244987, 0.64427202, 0.76772759, 0.94899084, 0.76998519, 0.57564372],
+            [
+                0.6754810302465651,
+                0.6277858262368159,
+                0.6728079183937916,
+                0.7092450515302072,
+                0.8001963572359172,
+                0.8798871538184535,
+            ],
             index=list(range(2, 8)),
             name="silhouette_score",
         ),
@@ -383,7 +390,14 @@ def test_silhouette_score():
     pd.testing.assert_series_equal(
         clustergram.silhouette,
         pd.Series(
-            [0.70244987, 0.64427202, 0.76772759, 0.94899084, 0.76998519, 0.57564372],
+            [
+                0.6754810302465651,
+                0.6277858262368159,
+                0.6728079183937916,
+                0.7092450515302072,
+                0.8001963572359172,
+                0.8798871538184535,
+            ],
             index=list(range(2, 8)),
             name="silhouette_score",
         ),
@@ -458,12 +472,12 @@ def test_calinski_harabasz_score():
         clustergram.calinski_harabasz_score(),
         pd.Series(
             [
-                23.17662874,
-                30.64301789,
-                55.22333618,
-                3116.43518408,
-                3899.06868932,
-                4439.30604863,
+                114.18545531981596,
+                259.8218744719872,
+                446.25054149041324,
+                586.3857013614834,
+                916.5220549808022,
+                1689.4091019412879,
             ],
             index=list(range(2, 8)),
             name="calinski_harabasz_score",
@@ -474,12 +488,12 @@ def test_calinski_harabasz_score():
         clustergram.calinski_harabasz,
         pd.Series(
             [
-                23.17662874,
-                30.64301789,
-                55.22333618,
-                3116.43518408,
-                3899.06868932,
-                4439.30604863,
+                114.18545531981596,
+                259.8218744719872,
+                446.25054149041324,
+                586.3857013614834,
+                916.5220549808022,
+                1689.4091019412879,
             ],
             index=list(range(2, 8)),
             name="calinski_harabasz_score",
@@ -554,7 +568,14 @@ def test_davies_bouldin_score():
     pd.testing.assert_series_equal(
         clustergram.davies_bouldin_score(),
         pd.Series(
-            [0.2493657, 0.35181197, 0.34758021, 0.05567944, 0.03051626, 0.02520726],
+            [
+                0.2945752391269888,
+                0.5101512437048275,
+                0.4762688744525792,
+                0.4822529450245402,
+                0.3533377436714937,
+                0.21391254262995393,
+            ],
             index=list(range(2, 8)),
             name="davies_bouldin_score",
         ),
@@ -563,7 +584,14 @@ def test_davies_bouldin_score():
     pd.testing.assert_series_equal(
         clustergram.davies_bouldin,
         pd.Series(
-            [0.2493657, 0.35181197, 0.34758021, 0.05567944, 0.03051626, 0.02520726],
+            [
+                0.2945752391269888,
+                0.5101512437048275,
+                0.4762688744525792,
+                0.4822529450245402,
+                0.3533377436714937,
+                0.21391254262995393,
+            ],
             index=list(range(2, 8)),
             name="davies_bouldin_score",
         ),
@@ -746,7 +774,7 @@ def test_bokeh():
     f = clustergram.bokeh(pca_kwargs=dict(random_state=random_state))
     out = str(json_item(f, "clustergram"))
 
-    assert out.count("data") == 56
+    assert out.count("data") == 60
     assert "cluster_labels" in out
     assert "count" in out
     assert "ratio" in out
@@ -755,7 +783,7 @@ def test_bokeh():
     f = clustergram.bokeh(pca_weighted=False)
     out = str(json_item(f, "clustergram"))
 
-    assert out.count("data") == 56
+    assert out.count("data") == 60
     assert "cluster_labels" in out
     assert "count" in out
     assert "ratio" in out

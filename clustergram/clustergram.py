@@ -307,7 +307,7 @@ class Clustergram:
         self.cluster_centers = {}
 
         if self.store_bic:
-            self.bic = pd.Series()
+            self.bic = pd.Series(dtype=float)
 
         for n in self.k_range:
             s = time()

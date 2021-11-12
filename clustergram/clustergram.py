@@ -756,7 +756,7 @@ class Clustergram:
 
         for n in self.k_range:
             means = self.cluster_centers[n].mean(axis=1)
-            if isinstance(means, (cp.core.core.ndarray, np.ndarray)):
+            if isinstance(means, (cp.ndarray, np.ndarray)):
                 self.plot_data[n] = means.take(self.labels[n].values)
                 self.link[n] = dict(zip(means.tolist(), range(n)))
             else:

@@ -1,6 +1,18 @@
 Changelog
 =========
 
+Version 0.6.0 (November 21, 2021)
+---------------------------------
+
+Enhancements:
+
+- ENH: optionally measure BIC during GMM (#21)
+
+Bug fixes:
+
+- BUG: cuML non-weighted plot fix (#25)
+
+
 Version 0.5.1 (May 24, 2021)
 ----------------------------
 

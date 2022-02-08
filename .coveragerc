@@ -1,5 +1,5 @@
 [run]
-source=momepy
+source=clustergram
 
 [report]
 exclude_lines =
@@ -7,3 +7,4 @@ exclude_lines =
 ignore_errors = True
 omit =
     clustergram/test_clustergram.py
+    clustergram/_version.py

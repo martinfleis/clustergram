@@ -11,3 +11,4 @@ dependencies:
   - numpy
   - matplotlib
   - bokeh==2.3
+  - jinja2==2

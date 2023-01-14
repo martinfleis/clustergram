@@ -29,7 +29,7 @@ jobs:
       - name: Setup micromamba
         uses: mamba-org/provision-with-micromamba@main
         with:
-          environment-file: ci/envs/latest.yaml
+          environment-file: ${{ matrix.environment-file }}
           micromamba-version: "latest"
 
       - name: Install clustergram

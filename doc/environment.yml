@@ -8,10 +8,10 @@ dependencies:
   - scikit-learn
   - scipy
   - seaborn
-  - pydata-sphinx-theme
+  - sphinx-book-theme
   - myst-nb
   - numpydoc
   - sphinx
   - pip
   - pip:
-    - urbangrammar-graphics
+      - urbangrammar-graphics

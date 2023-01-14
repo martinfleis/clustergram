@@ -745,7 +745,7 @@ class Clustergram:
                 )
             else:
                 means = self.cluster_centers[n].dot(self.pca.components_[0])
-            self.plot_data_pca[n] = cp.take(means, self.labels[n].values)
+            self.plot_data_pca[n] = cp.take(means, self.labels[n].values.get())
             self.link_pca[n] = dict(zip(means.tolist(), range(n)))
 
     def _compute_means_cuml(self):
@@ -760,7 +760,7 @@ class Clustergram:
                 self.plot_data[n] = means.take(self.labels[n].values)
                 self.link[n] = dict(zip(means.tolist(), range(n)))
             else:
-                self.plot_data[n] = means.take(self.labels[n].values).to_array()
+                self.plot_data[n] = means.take(self.labels[n].values).to_numpy()
                 self.link[n] = dict(zip(means.values.tolist(), range(n)))
 
     def _compute_means(self, pca_weighted, pca_kwargs):
@@ -887,8 +887,8 @@ class Clustergram:
             else:
                 ax.scatter(
                     [i] * i,
-                    cl.index.to_array(),
-                    (cl * ((500 / len(means)) * size)).to_array(),
+                    cl.index.to_numpy(),
+                    (cl * ((500 / len(means)) * size)).to_numpy(),
                     zorder=cl_zorder,
                     color=cl_c,
                     edgecolor=cl_ec,

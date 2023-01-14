@@ -1,0 +1,11 @@
+- pandas
+- matplotlib
+- bokeh
+- scikit-learn
+- scipy
+- seaborn
+- sphinx-book-theme
+- myst-nb
+- numpydoc
+- sphinx
+- urbangrammar-graphics

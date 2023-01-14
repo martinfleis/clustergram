@@ -1008,8 +1008,8 @@ class Clustergram:
             if figsize is None:
                 figsize = (600, 500)
             fig = figure(
-                plot_width=figsize[0],
-                plot_height=figsize[1],
+                width=figsize[0],
+                height=figsize[1],
                 x_axis_label="Number of clusters (k)",
                 y_axis_label=ylabel,
             )

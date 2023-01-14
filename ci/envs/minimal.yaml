@@ -1,0 +1,13 @@
+name: test
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - scikit-learn==1.0
+  - pytest
+  - pytest-cov
+  - codecov
+  - pandas
+  - numpy
+  - matplotlib
+  - bokeh==2.3

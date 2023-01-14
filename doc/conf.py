@@ -18,7 +18,7 @@ import clustergram  # noqa
 # -- Project information -----------------------------------------------------
 
 project = "Clustergram"
-copyright = "2020-2021, Martin Fleischmann"
+copyright = "Martin Fleischmann"
 author = "Martin Fleischmann"
 
 version = clustergram.__version__
@@ -38,8 +38,8 @@ extensions = [
     "myst_nb",
 ]
 
-jupyter_execute_notebooks = "force"
-execution_allow_errors = True
+nb_execution_mode = "auto"
+nb_execution_allow_errors = True
 
 autosummary_generate = True
 numpydoc_show_class_members = True
@@ -58,17 +58,14 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "pydata_sphinx_theme"
-
+html_theme = "sphinx_book_theme"
+html_title = "clustergram"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-html_css_files = [
-    "custom.css",
-]
-html_sidebars = {
-    "**": ["docs-sidebar.html"],
-}
+# html_css_files = [
+#     "custom.css",
+# ]
 html_logo = "_static/logo.svg"

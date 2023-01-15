@@ -27,3 +27,5 @@ doc/clustergram.pickle
 doc/notebooks/clustergram.html
 doc/notebooks/clustergram.svg
 doc/notebooks/clustergram.pickle
+
+.ruff_cache

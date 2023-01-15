@@ -10,7 +10,11 @@ Enhancements:
 
 Compatibility notes:
 
-- Clustergram now requires Python 3.8
+- ``clustergram`` now requires Python 3.8
+
+Minor notes:
+
+- ``examples`` dictionary has been removed. Refer to the notebooks in the documentation.
 
 Version 0.6.0 (November 21, 2021)
 ---------------------------------

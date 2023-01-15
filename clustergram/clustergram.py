@@ -5,6 +5,7 @@ Original idea is by Matthias Schonlau - http://www.schonlau.net/clustergram.html
 """
 
 import contextlib
+from collections import defaultdict
 from time import time
 
 import numpy as np
@@ -156,10 +157,12 @@ class Clustergram:
 
         self.engine_kwargs = kwargs
         self.verbose = verbose
+        self.link_pca = defaultdict(dict)
 
         if self.backend in ["sklearn", "scipy"]:
-            self.plot_data_pca = pd.DataFrame()
             self.plot_data = pd.DataFrame()
+            self.plot_data_pca = defaultdict(pd.DataFrame)
+
         else:
             try:
                 import cudf
@@ -168,8 +171,10 @@ class Clustergram:
                     "cuML, cuDF and cupy packages are required to use `cuML` backend."
                 ) from e
 
-            self.plot_data_pca = cudf.DataFrame()
             self.plot_data = cudf.DataFrame()
+            self.plot_data_pca = defaultdict(cudf.DataFrame)
+
+        self._n_pca = 0
 
     def __repr__(self):
         return (
@@ -709,13 +714,18 @@ class Clustergram:
         """Compute PCA weighted cluster mean values using sklearn backend."""
         from sklearn.decomposition import PCA
 
-        self.pca = PCA(n_components=1, **pca_kwargs).fit(self.data).components_[0]
-        self.link_pca = {}
+        n_pca = pca_kwargs["n_components"]
+        if n_pca > self._n_pca:
 
-        for n in self.k_range:
-            means = self.cluster_centers[n].dot(self.pca)
-            self.plot_data_pca[n] = np.take(means, self.labels[n].values)
-            self.link_pca[n] = dict(zip(means, range(n)))
+            self._n_pca = n_pca
+            self.pca = PCA(**pca_kwargs).fit(self.data)
+
+        if self.plot_data_pca[n_pca].empty:
+
+            for n in self.k_range:
+                means = self.cluster_centers[n].dot(self.pca.components_[n_pca - 1])
+                self.plot_data_pca[n_pca][n] = np.take(means, self.labels[n].values)
+                self.link_pca[n_pca][n] = dict(zip(means, range(n)))
 
     def _compute_means_sklearn(self):
         """Compute cluster mean values using sklearn backend."""
@@ -732,17 +742,26 @@ class Clustergram:
         import cupy as cp
         from cuml import PCA
 
-        self.pca = PCA(n_components=1, **pca_kwargs).fit(self.data)
-        self.link_pca = {}
+        n_pca = pca_kwargs["n_components"]
+        if n_pca > self._n_pca:
 
-        for n in self.k_range:
-            means = (
-                self.cluster_centers[n].values.dot(self.pca.components_.values[0])
-                if isinstance(self.data, cudf.DataFrame)
-                else self.cluster_centers[n].dot(self.pca.components_[0])
-            )
-            self.plot_data_pca[n] = cp.take(means, self.labels[n].values.get())
-            self.link_pca[n] = dict(zip(means.tolist(), range(n)))
+            self._n_pca = n_pca
+            self.pca = PCA(**pca_kwargs).fit(self.data)
+
+        if self.plot_data_pca[n_pca].empty:
+
+            for n in self.k_range:
+                means = (
+                    self.cluster_centers[n].values.dot(
+                        self.pca.components_.values[n_pca - 1]
+                    )
+                    if isinstance(self.data, cudf.DataFrame)
+                    else self.cluster_centers[n].dot(self.pca.components_[n_pca - 1])
+                )
+                self.plot_data_pca[n_pca][n] = cp.take(
+                    means, self.labels[n].values.get()
+                )
+                self.link_pca[n_pca][n] = dict(zip(means.tolist(), range(n)))
 
     def _compute_means_cuml(self):
         """Compute cluster mean values using cuML backend."""
@@ -761,13 +780,10 @@ class Clustergram:
 
     def _compute_means(self, pca_weighted, pca_kwargs):
         if pca_weighted:
-            if self.plot_data_pca.empty:
-                pca_kwargs.pop("n_components", None)
-
-                if self.backend in ["sklearn", "scipy"]:
-                    self._compute_pca_means_sklearn(**pca_kwargs)
-                else:
-                    self._compute_pca_means_cuml(**pca_kwargs)
+            if self.backend in ["sklearn", "scipy"]:
+                self._compute_pca_means_sklearn(**pca_kwargs)
+            else:
+                self._compute_pca_means_cuml(**pca_kwargs)
         else:
             if self.plot_data.empty:
                 if self.backend in ["sklearn", "scipy"]:
@@ -786,6 +802,7 @@ class Clustergram:
         k_range=None,
         pca_weighted=True,
         pca_kwargs={},
+        pca_component=1,
     ):
         """
         Generate clustergram plot based on cluster centre mean values.
@@ -818,6 +835,13 @@ class Clustergram:
         pca_kwargs : dict (default {})
             Additional arguments passed to the PCA object,
             e.g. ``svd_solver``. Applies only if ``pca_weighted=True``.
+        pca_component : int (default 1)
+            The principal component used to weigh mean of clusters if
+            ``pca_weighted=True``. The PCA computation is cached so it is cheap to
+            compare multiple options. However, if you use ``pca=1`` first, when
+            trying ``pca=2`` the PCA is run again as it computed only for the max
+            ``pca`` requested. If you first run plot with ``pca=2``, the second with
+            ``pca=1`` does not trigger the PCA computation.
 
         Returns
         -------
@@ -835,6 +859,7 @@ class Clustergram:
         Those are computed on the first call of each option (pca_weighted=True/False).
 
         """
+        pca_kwargs["n_components"] = pca_component
         self._compute_means(pca_weighted, pca_kwargs)
 
         if ax is None:
@@ -859,7 +884,7 @@ class Clustergram:
             k_range = self.k_range
 
         if pca_weighted:
-            means = self.plot_data_pca
+            means = self.plot_data_pca[pca_component]
             ax.set_ylabel("PCA weighted mean of the clusters")
         else:
             means = self.plot_data
@@ -920,6 +945,7 @@ class Clustergram:
         figsize=None,
         pca_weighted=True,
         pca_kwargs={},
+        pca_component=1,
     ):
         """
         Generate interactive clustergram plot based on cluster centre mean values using
@@ -952,6 +978,13 @@ class Clustergram:
         pca_kwargs : dict (default {})
             Additional arguments passed to the PCA object,
             e.g. ``svd_solver``. Applies only if ``pca_weighted=True``.
+        pca_component : int (default 1)
+            The principal component used to weigh mean of clusters if
+            ``pca_weighted=True``. The PCA computation is cached so it is cheap to
+            compare multiple options. However, if you use ``pca=1`` first, when
+            trying ``pca=2`` the PCA is run again as it computed only for the max
+            ``pca`` requested. If you first run plot with ``pca=2``, the second with
+            ``pca=1`` does not trigger computation.
 
         Returns
         -------
@@ -990,11 +1023,12 @@ class Clustergram:
                 "'bokeh' is required to use bokeh plotting backend."
             ) from e
 
+        pca_kwargs["n_components"] = pca_component
         self._compute_means(pca_weighted, pca_kwargs)
 
         if pca_weighted:
-            means = self.plot_data_pca
-            links = self.link_pca
+            means = self.plot_data_pca[pca_component]
+            links = self.link_pca[pca_component]
             ylabel = "PCA weighted mean of the clusters"
         else:
             means = self.plot_data

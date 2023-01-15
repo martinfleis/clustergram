@@ -3,9 +3,18 @@ channels:
   - conda-forge
 dependencies:
   - scikit-learn
+  - scipy
   - seaborn
+  - matplotlib
   - bokeh
   - pandas
   - pytest
   - pytest-cov
   - ruff
+  - sphinx-book-theme
+  - myst-nb
+  - numpydoc
+  - sphinx
+  - pip
+  - pip:
+      - urbangrammar-graphics

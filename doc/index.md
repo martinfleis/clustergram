@@ -23,7 +23,7 @@ Gaussian Mixture Model (scikit-learn only) clustering, plus hierarchical/agglome
 clustering using `SciPy`. Alternatively, you can create clustergram using  `from_*`
 constructors based on alternative clustering algorithms.
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinfleis/clustergram/HEAD?filepath=doc%2Fnotebooks)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinfleis/clustergram/main?urlpath=tree/doc/notebooks/)
 
 ## Getting started
 

@@ -8,7 +8,14 @@ dependencies:
   - matplotlib
   - bokeh
   - pandas
-  - clustergram
+  - pytest
+  - pytest-cov
+  - ruff
+  - sphinx-book-theme
+  - myst-nb
+  - numpydoc
+  - sphinx
+  - sphinx-copybutton
   - pip
   - pip:
       - urbangrammar-graphics

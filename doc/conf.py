@@ -72,3 +72,14 @@ html_static_path = ["_static"]
 #     "custom.css",
 # ]
 html_logo = "_static/logo.svg"
+
+html_theme_options = {
+    "repository_url": "https://github.com/martinfleis/clustergram",
+    "use_repository_button": True,
+    "use_download_button": False,
+    "use_fullscreen_button": False,
+    "use_issues_button": True,
+    "launch_buttons": {
+        "binderhub_url": "https://mybinder.org/v2/gh/martinfleis/clustergram/HEAD?filepath=doc%2Fnotebooks"
+    },
+}

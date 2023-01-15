@@ -1,12 +1,14 @@
 version: 2
-formats: []
 
-sphinx:
-  configuration: doc/conf.py
+build:
+  os: "ubuntu-20.04"
+  tools:
+    python: "mambaforge-4.10"
+
+conda:
+  environment: environment.yml
 
 python:
-  version: 3
   install:
-    - requirements: doc/requirements.txt
     - method: pip
       path: .

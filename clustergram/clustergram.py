@@ -1,20 +1,19 @@
-"""
-Clustergram - visualization and diagnostics for cluster analysis in Python
-
+"""Clustergram - visualization and diagnostics for cluster analysis in Python.
 Copyright (C) 2020-2021  Martin Fleischmann
 
 Original idea is by Matthias Schonlau - http://www.schonlau.net/clustergram.html.
-
 """
 
+import contextlib
 from time import time
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 
 
 class Clustergram:
-    """
-    Clustergram class mimicking the interface of clustering class (e.g. ``KMeans``).
+
+    """Clustergram class mimicking the interface of clustering class (e.g. ``KMeans``).
 
     Clustergram is a graph used to examine how cluster members are assigned to clusters
     as the number of clusters increases. This graph is useful in
@@ -68,7 +67,6 @@ class Clustergram:
 
     Attributes
     ----------
-
     labels : DataFrame
         DataFrame with cluster labels for each iteration.
     cluster_centers : dict
@@ -165,10 +163,10 @@ class Clustergram:
         else:
             try:
                 import cudf
-            except (ImportError, ModuleNotFoundError):
+            except (ImportError, ModuleNotFoundError) as e:
                 raise ImportError(
                     "cuML, cuDF and cupy packages are required to use `cuML` backend."
-                )
+                ) from e
 
             self.plot_data_pca = cudf.DataFrame()
             self.plot_data = cudf.DataFrame()
@@ -217,11 +215,13 @@ class Clustergram:
             self._scipy_hierarchical(data, **kwargs)
 
     def _kmeans_sklearn(self, data, minibatch, **kwargs):
-        """Use scikit-learn KMeans"""
+        """Use scikit-learn KMeans."""
         try:
             from sklearn.cluster import KMeans, MiniBatchKMeans
-        except ImportError:
-            raise ImportError("scikit-learn is required to use `sklearn` backend.")
+        except ImportError as e:
+            raise ImportError(
+                "scikit-learn is required to use `sklearn` backend."
+            ) from e
 
         self.labels = pd.DataFrame()
         self.cluster_centers = {}
@@ -239,12 +239,11 @@ class Clustergram:
                 continue
 
             s = time()
-            if minibatch:
-                results = MiniBatchKMeans(n_clusters=n, **self.engine_kwargs).fit(
-                    data, **kwargs
-                )
-            else:
-                results = KMeans(n_clusters=n, **self.engine_kwargs).fit(data, **kwargs)
+            results = (
+                MiniBatchKMeans(n_clusters=n, **self.engine_kwargs).fit(data, **kwargs)
+                if minibatch
+                else KMeans(n_clusters=n, **self.engine_kwargs).fit(data, **kwargs)
+            )
 
             self.labels[n] = results.labels_
             self.cluster_centers[n] = results.cluster_centers_
@@ -252,15 +251,15 @@ class Clustergram:
             print(f"K={n} fitted in {time() - s} seconds.") if self.verbose else None
 
     def _kmeans_cuml(self, data, **kwargs):
-        """Use cuML KMeans"""
+        """Use cuML KMeans."""
         try:
-            from cuml import KMeans
             import cudf
             import cupy as cp
-        except ImportError:
+            from cuml import KMeans
+        except ImportError as e:
             raise ImportError(
                 "cuML, cuDF and cupy packages are required to use `cuML` backend."
-            )
+            ) from e
 
         self.labels = cudf.DataFrame()
         self.cluster_centers = {}
@@ -290,15 +289,15 @@ class Clustergram:
             print(f"K={n} fitted in {time() - s} seconds.") if self.verbose else None
 
     def _gmm_sklearn(self, data, **kwargs):
-        """Use sklearn.mixture.GaussianMixture"""
+        """Use sklearn.mixture.GaussianMixture."""
         try:
-            from sklearn.mixture import GaussianMixture
             from scipy.stats import multivariate_normal
-        except ImportError:
+            from sklearn.mixture import GaussianMixture
+        except ImportError as e:
             raise ImportError(
                 "scikit-learn and scipy are required to use `sklearn` "
                 "backend and `gmm`."
-            )
+            ) from e
 
         if isinstance(data, pd.DataFrame):
             data = data.values
@@ -331,12 +330,12 @@ class Clustergram:
 
             print(f"K={n} fitted in {time() - s} seconds.") if self.verbose else None
 
-    def _scipy_hierarchical(self, data, **kwargs):
-        """Use scipy.cluster.hierarchy.linkage"""
+    def _scipy_hierarchical(self, data):
+        """Use scipy.cluster.hierarchy.linkage."""
         try:
             from scipy.cluster import hierarchy
-        except ImportError:
-            raise ImportError("scipy is required to use `scipy` backend.")
+        except ImportError as e:
+            raise ImportError("scipy is required to use `scipy` backend.") from e
 
         method = self.engine_kwargs.pop("linkage", "single")
         self.linkage = hierarchy.linkage(data, method=method, **self.engine_kwargs)
@@ -360,11 +359,10 @@ class Clustergram:
 
     @classmethod
     def from_centers(cls, cluster_centers, labels, data=None):
-        """Create clustergram based on cluster centers dictionary and labels DataFrame
+        """Create clustergram based on cluster centers dictionary and labels DataFrame.
 
         Parameters
         ----------
-
         cluster_centers : dict
             dictionary of cluster centers with keys encoding the number of clusters
             and values being ``M``x````N`` arrays where ``M`` == key and ``N`` ==
@@ -426,14 +424,13 @@ class Clustergram:
 
     @classmethod
     def from_data(cls, data, labels, method="mean"):
-        """Create clustergram based on data and labels DataFrame
+        """Create clustergram based on data and labels DataFrame.
 
         Cluster centers are created as mean values or median values as a
         groupby function over data using individual labels.
 
         Parameters
         ----------
-
         data : array-like
             array used as an input of the clustering algorithm in the ``(M, N)`` shape
             where ``M`` == number of observations and ``N`` == number of variables
@@ -471,7 +468,6 @@ class Clustergram:
         >>> cgram.plot()
 
         """
-
         cgram = cls(k_range=list(labels.columns), method="from_data")
 
         cgram.cluster_centers = {}
@@ -508,7 +504,6 @@ class Clustergram:
 
         Parameters
         ----------
-
         **kwargs
             Additional arguments passed to the silhouette_score function,
             e.g. ``sample_size``.
@@ -558,11 +553,11 @@ class Clustergram:
                         self.data, self.labels[k], **kwargs
                     )
         else:
-            if hasattr(self.data, "to_pandas"):
-                data = self.data.to_pandas()
-            else:
-                data = self.data.get()
-
+            data = (
+                self.data.to_pandas()
+                if hasattr(self.data, "to_pandas")
+                else self.data.get()
+            )
             for k in self.k_range:
                 if k > 1:
                     self.silhouette.loc[k] = metrics.silhouette_score(
@@ -629,10 +624,11 @@ class Clustergram:
                         self.data, self.labels[k]
                     )
         else:
-            if hasattr(self.data, "to_pandas"):
-                data = self.data.to_pandas()
-            else:
-                data = self.data.get()
+            data = (
+                self.data.to_pandas()
+                if hasattr(self.data, "to_pandas")
+                else self.data.get()
+            )
 
             for k in self.k_range:
                 if k > 1:
@@ -695,10 +691,11 @@ class Clustergram:
                         self.data, self.labels[k]
                     )
         else:
-            if hasattr(self.data, "to_pandas"):
-                data = self.data.to_pandas()
-            else:
-                data = self.data.get()
+            data = (
+                self.data.to_pandas()
+                if hasattr(self.data, "to_pandas")
+                else self.data.get()
+            )
 
             for k in self.k_range:
                 if k > 1:
@@ -709,7 +706,7 @@ class Clustergram:
         return self.davies_bouldin
 
     def _compute_pca_means_sklearn(self, **pca_kwargs):
-        """Compute PCA weighted cluster mean values using sklearn backend"""
+        """Compute PCA weighted cluster mean values using sklearn backend."""
         from sklearn.decomposition import PCA
 
         self.pca = PCA(n_components=1, **pca_kwargs).fit(self.data).components_[0]
@@ -721,7 +718,7 @@ class Clustergram:
             self.link_pca[n] = dict(zip(means, range(n)))
 
     def _compute_means_sklearn(self):
-        """Compute cluster mean values using sklearn backend"""
+        """Compute cluster mean values using sklearn backend."""
         self.link = {}
 
         for n in self.k_range:
@@ -730,26 +727,25 @@ class Clustergram:
             self.link[n] = dict(zip(means, range(n)))
 
     def _compute_pca_means_cuml(self, **pca_kwargs):
-        """Compute PCA weighted cluster mean values using cuML backend"""
-        from cuml import PCA
+        """Compute PCA weighted cluster mean values using cuML backend."""
         import cudf
         import cupy as cp
+        from cuml import PCA
 
         self.pca = PCA(n_components=1, **pca_kwargs).fit(self.data)
         self.link_pca = {}
 
         for n in self.k_range:
-            if isinstance(self.data, cudf.DataFrame):
-                means = self.cluster_centers[n].values.dot(
-                    self.pca.components_.values[0]
-                )
-            else:
-                means = self.cluster_centers[n].dot(self.pca.components_[0])
+            means = (
+                self.cluster_centers[n].values.dot(self.pca.components_.values[0])
+                if isinstance(self.data, cudf.DataFrame)
+                else self.cluster_centers[n].dot(self.pca.components_[0])
+            )
             self.plot_data_pca[n] = cp.take(means, self.labels[n].values.get())
             self.link_pca[n] = dict(zip(means.tolist(), range(n)))
 
     def _compute_means_cuml(self):
-        """Compute cluster mean values using cuML backend"""
+        """Compute cluster mean values using cuML backend."""
         import cupy as cp
 
         self.link = {}
@@ -896,11 +892,12 @@ class Clustergram:
                     **cluster_style,
                 )
 
-            try:
-                if self.backend in ["sklearn", "scipy"]:
-                    sub = means.groupby([i, i + 1]).count().reset_index()
-                else:
-                    sub = means.groupby([i, i + 1]).count().reset_index().to_pandas()
+            with contextlib.suppress(KeyError, ValueError):
+                sub = (
+                    means.groupby([i, i + 1]).count().reset_index()
+                    if self.backend in ["sklearn", "scipy"]
+                    else means.groupby([i, i + 1]).count().reset_index().to_pandas()
+                )
                 for r in sub.itertuples():
                     ax.plot(
                         [i, i + 1],
@@ -911,8 +908,6 @@ class Clustergram:
                         solid_capstyle=solid_capstyle,
                         **line_style,
                     )
-            except (KeyError, ValueError):
-                pass
         return ax
 
     def bokeh(
@@ -988,10 +983,12 @@ class Clustergram:
 
         """
         try:
-            from bokeh.plotting import figure, ColumnDataSource
             from bokeh.models import HoverTool
-        except ImportError:
-            raise ImportError("'bokeh' is required to use bokeh plotting backend.")
+            from bokeh.plotting import ColumnDataSource, figure
+        except ImportError as e:
+            raise ImportError(
+                "'bokeh' is required to use bokeh plotting backend."
+            ) from e
 
         self._compute_means(pca_weighted, pca_kwargs)
 
@@ -1043,14 +1040,14 @@ class Clustergram:
             cluster_labels += [links[i][x] for x in cl.index.values.tolist()]
 
         source = ColumnDataSource(
-            data=dict(
-                x=x,
-                y=y,
-                size=sizes,
-                count=count,
-                ratio=ratio,
-                cluster_labels=cluster_labels,
-            )
+            data={
+                "x": x,
+                "y": y,
+                "size": sizes,
+                "count": count,
+                "ratio": ratio,
+                "cluster_labels": cluster_labels,
+            }
         )
 
         tooltips = [

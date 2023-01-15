@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+
+[project]
+name = "clustergram"
+dynamic = ["version"]
+authors = [
+    {name = "Martin Fleischmann", email = "martin@martinfleischmann.net"},
+]
+maintainers = [
+    {name = "Martin Fleischmann"},
+]
+license = {text = "MIT"}
+description = "Clustergram - visualization and diagnostics for cluster analysis"
+readme = "Readme.md"
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "pandas",
+    "numpy",
+    "matplotlib",
+]
+
+[project.urls]
+Home = "https://clustergram.readthedocs.io"
+Repository = "https://github.com/martinfleis/clustergram"
+
+[tool.setuptools.packages.find]
+include = [
+    "clustergram",
+    "clustergram.*",
+]
+
+[tool.coverage.run]
+omit = ["clustergram/test_clustergram.py"]
+source = ['clustergram']
+
+[tool.coverage.report]
+exclude_lines = ["except ImportError"]
+ignore_errors = true
+omit = ["clustergram/test_clustergram.py"]
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "W", "I", "UP", "N", "B", "A", "C4", "SIM", "ARG"]
+exclude = ["clustergram/test_clustergram.py", "doc"]
+target-version = "py38"
+ignore = ["B006"]

@@ -2,9 +2,20 @@ name: clustergram
 channels:
   - conda-forge
 dependencies:
-  # - scikit-learn
+  - scikit-learn
+  - scipy
   - seaborn
+  - matplotlib
   - bokeh
+  - pandas
+  - pytest
+  - pytest-cov
+  - ruff
+  - sphinx-book-theme
+  - myst-nb
+  - numpydoc
+  - sphinx
+  - sphinx-copybutton
+  - pip
   - pip:
-      - git+https://github.com/martinfleis/clustergram.git
-      - scikit-learn
+      - urbangrammar-graphics

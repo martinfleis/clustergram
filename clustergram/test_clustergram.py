@@ -1,10 +1,9 @@
-from sklearn.datasets import make_blobs
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
 from bokeh.embed import json_item
 from pandas.testing import assert_series_equal
-
+from sklearn.datasets import make_blobs
 
 try:
     import cudf

@@ -36,13 +36,16 @@ extensions = [
     "numpydoc",
     "sphinx.ext.autosummary",
     "myst_nb",
+    "sphinx_copybutton",
 ]
 
-nb_execution_mode = "auto"
+nb_execution_mode = "force"
 nb_execution_allow_errors = True
 
 autosummary_generate = True
 numpydoc_show_class_members = True
+numpydoc_class_members_toctree = False
+add_module_names = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

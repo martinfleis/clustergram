@@ -1,7 +1,7 @@
 # Clustergram
 
 ![logo
-clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/logo.svg)
+clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/main/doc/_static/logo.svg)
 
 ## Visualization and diagnostics for cluster analysis
 
@@ -9,7 +9,7 @@ clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/do
 
 Clustergram is a diagram proposed by Matthias Schonlau in his paper *[The clustergram: A
 graph for visualizing hierarchical and nonhierarchical cluster
-analyses](https://journals.sagepub.com/doi/10.1177/1536867X0200200405)*.
+analyses](https://journals.sagepub.com/doi/10.1177/1536867X0200200405)*:
 
 > In hierarchical cluster analysis, dendrograms are used to visualize how clusters are
 > formed. I propose an alternative graph called a “clustergram” to examine how cluster
@@ -27,6 +27,8 @@ This is a Python implementation, originally based on Tal's script, written for
 Gaussian Mixture Model (scikit-learn only) clustering, plus hierarchical/agglomerative
 clustering using `SciPy`. Alternatively, you can create clustergram using  `from_*`
 constructors based on alternative clustering algorithms.
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinfleis/clustergram/main?urlpath=tree/doc/notebooks/)
 
 ## Getting started
 

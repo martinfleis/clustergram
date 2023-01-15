@@ -4,14 +4,14 @@
 
 Clustergram is a diagram proposed by Matthias Schonlau in his paper *[The clustergram: A
 graph for visualizing hierarchical and nonhierarchical cluster
-analyses](https://journals.sagepub.com/doi/10.1177/1536867X0200200405)*.
+analyses](https://journals.sagepub.com/doi/10.1177/1536867X0200200405)*:
 
-*In hierarchical cluster analysis, dendrograms are used to visualize how clusters are
-formed. I propose an alternative graph called a “clustergram” to examine how cluster
-members are assigned to clusters as the number of clusters increases. This graph is
-useful in exploratory analysis for nonhierarchical clustering algorithms such as k-means
-and for hierarchical cluster algorithms when the number of observations is large enough
-to make dendrograms impractical.*
+> In hierarchical cluster analysis, dendrograms are used to visualize how clusters are
+> formed. I propose an alternative graph called a “clustergram” to examine how cluster
+> members are assigned to clusters as the number of clusters increases. This graph is
+> useful in exploratory analysis for nonhierarchical clustering algorithms such as k-means
+> and for hierarchical cluster algorithms when the number of observations is large enough
+> to make dendrograms impractical.
 
 The clustergram was later implemented in R by [Tal
 Galili](https://www.r-statistics.com/2010/06/clustergram-visualization-and-diagnostics-for-cluster-analysis-r-code/),
@@ -23,7 +23,7 @@ Gaussian Mixture Model (scikit-learn only) clustering, plus hierarchical/agglome
 clustering using `SciPy`. Alternatively, you can create clustergram using  `from_*`
 constructors based on alternative clustering algorithms.
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinfleis/clustergram/HEAD?filepath=doc%2Fnotebooks)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinfleis/clustergram/main?urlpath=tree/doc/notebooks/)
 
 ## Getting started
 

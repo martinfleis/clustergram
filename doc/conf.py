@@ -79,7 +79,7 @@ html_theme_options = {
     "use_download_button": False,
     "use_fullscreen_button": False,
     "use_issues_button": True,
-    "launch_buttons": {
-        "binderhub_url": "https://mybinder.org/v2/gh/martinfleis/clustergram/HEAD?filepath=doc%2Fnotebooks"
-    },
+    "repository_branch": "main",
+    "path_to_docs": "doc",
+    "launch_buttons": {"binderhub_url": "https://mybinder.org/"},
 }

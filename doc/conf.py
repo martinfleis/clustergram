@@ -36,6 +36,7 @@ extensions = [
     "numpydoc",
     "sphinx.ext.autosummary",
     "myst_nb",
+    "sphinx_copybutton",
 ]
 
 nb_execution_mode = "force"

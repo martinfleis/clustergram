@@ -15,6 +15,7 @@ dependencies:
   - myst-nb
   - numpydoc
   - sphinx
+  - sphinx-copybutton
   - pip
   - pip:
       - urbangrammar-graphics

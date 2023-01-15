@@ -1,6 +1,17 @@
 Changelog
 =========
 
+Version 0.7.0 (January ??, 2023)
+--------------------------------
+
+Enhancements:
+
+- ENH: allow weighting by a custom principal component (#35)
+
+Compatibility notes:
+
+- Clustergram now requires Python 3.8
+
 Version 0.6.0 (November 21, 2021)
 ---------------------------------
 
@@ -12,7 +23,6 @@ Bug fixes:
 
 - BUG: cuML non-weighted plot fix (#25)
 
-
 Version 0.5.1 (May 24, 2021)
 ----------------------------
 
@@ -21,7 +31,6 @@ Bugfix for `from_data` method with non-default indices.
 Bugs:
 
 - BUG: cluster centers empty due to index mismatch (#19)
-
 
 Version 0.5.0 (May 11, 2021)
 ----------------------------
@@ -34,8 +43,7 @@ Enhancements:
 - ENH: support interactive bokeh plots (#14)
 - ENH: skip k=1 in K-Means implementations (#18)
 
-+ documentation restructuring
-
+- documentation restructuring
 
 Version 0.4.0 (April 27, 2021)
 ------------------------------
@@ -46,7 +54,6 @@ Enhancements:
 
 - ENH: support hierarchical clustering using scipy (#11)
 - ENH: from_data and from_centers methods (#12)
-
 
 Version 0.3.0 (January 31, 2021)
 --------------------------------
@@ -64,7 +71,6 @@ Enhancements:
 - Silhouette score
 - Calinski and Harabasz score
 - Davies-Bouldin score
-
 
 Version 0.2.0 (December 21, 2020)
 ---------------------------------

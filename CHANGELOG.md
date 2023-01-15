@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.7.0 (January ??, 2023)
+## Version 0.7.0 (January 15, 2023)
 
 __Enhancements__:
 
@@ -9,6 +9,7 @@ __Enhancements__:
 __Compatibility notes__:
 
 - ``clustergram`` now requires Python 3.8
+- RAPIDS.AI implementation has been tested with version 22.12.
 
 __Minor notes__:
 

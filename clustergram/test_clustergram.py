@@ -58,7 +58,7 @@ def test_sklearn_kmeans():
 
     ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
     assert len(ax.get_children()) == 46
-    
+
     assert clustergram.plot_data.empty
     ax = clustergram.plot(pca_weighted=False)
     assert len(ax.get_children()) == 46

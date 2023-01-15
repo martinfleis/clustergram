@@ -41,11 +41,11 @@ include = [
 
 [tool.coverage.run]
 omit = ["clustergram/test_clustergram.py"]
-source = 'clustergram'
+source = ['clustergram']
 
 [tool.coverage.report]
-exclude_lines =  "except ImportError"
-ignore_errors = "True"
+exclude_lines = [ "except ImportError"]
+ignore_errors = true
 omit = ["clustergram/test_clustergram.py"]
 
 [tool.ruff]

@@ -2,9 +2,10 @@ name: clustergram
 channels:
   - conda-forge
 dependencies:
-  # - scikit-learn
+  - scikit-learn
   - seaborn
   - bokeh
-  - pip:
-      - git+https://github.com/martinfleis/clustergram.git
-      - scikit-learn
+  - pandas
+  - pytest
+  - pytest-cov
+  - ruff

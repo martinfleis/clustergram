@@ -44,7 +44,7 @@ omit = ["clustergram/test_clustergram.py"]
 source = ['clustergram']
 
 [tool.coverage.report]
-exclude_lines = [ "except ImportError"]
+exclude_lines = ["except ImportError"]
 ignore_errors = true
 omit = ["clustergram/test_clustergram.py"]
 

@@ -38,7 +38,7 @@ extensions = [
     "myst_nb",
 ]
 
-nb_execution_mode = "auto"
+nb_execution_mode = "force"
 nb_execution_allow_errors = True
 
 autosummary_generate = True

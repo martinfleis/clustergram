@@ -1,18 +1,32 @@
 # Clustergram
 
-![logo clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/logo.svg)
+![logo
+clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/logo.svg)
 
 ## Visualization and diagnostics for cluster analysis
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4750483.svg)](https://doi.org/10.5281/zenodo.4750483)
 
-Clustergram is a diagram proposed by Matthias Schonlau in his paper *[The clustergram: A graph for visualizing hierarchical and nonhierarchical cluster analyses](https://journals.sagepub.com/doi/10.1177/1536867X0200200405)*.
+Clustergram is a diagram proposed by Matthias Schonlau in his paper *[The clustergram: A
+graph for visualizing hierarchical and nonhierarchical cluster
+analyses](https://journals.sagepub.com/doi/10.1177/1536867X0200200405)*.
 
-> In hierarchical cluster analysis, dendrograms are used to visualize how clusters are formed. I propose an alternative graph called a “clustergram” to examine how cluster members are assigned to clusters as the number of clusters increases. This graph is useful in exploratory analysis for nonhierarchical clustering algorithms such as k-means and for hierarchical cluster algorithms when the number of observations is large enough to make dendrograms impractical.
+> In hierarchical cluster analysis, dendrograms are used to visualize how clusters are
+> formed. I propose an alternative graph called a “clustergram” to examine how cluster
+> members are assigned to clusters as the number of clusters increases. This graph is
+> useful in exploratory analysis for nonhierarchical clustering algorithms such as
+> k-means and for hierarchical cluster algorithms when the number of observations is
+> large enough to make dendrograms impractical.
 
-The clustergram was later implemented in R by [Tal Galili](https://www.r-statistics.com/2010/06/clustergram-visualization-and-diagnostics-for-cluster-analysis-r-code/), who also gives a thorough explanation of the concept.
+The clustergram was later implemented in R by [Tal
+Galili](https://www.r-statistics.com/2010/06/clustergram-visualization-and-diagnostics-for-cluster-analysis-r-code/),
+who also gives a thorough explanation of the concept.
 
-This is a Python translation of Tal's script written for `scikit-learn` and RAPIDS `cuML` implementations of K-Means, Mini Batch K-Means and Gaussian Mixture Model (scikit-learn only) clustering, plus hierarchical/agglomerative clustering using `SciPy`. Alternatively, you can create clustergram using  `from_*` constructors based on alternative clustering algorithms.
+This is a Python implementation, originally based on Tal's script, written for
+`scikit-learn` and RAPIDS `cuML` implementations of K-Means, Mini Batch K-Means and
+Gaussian Mixture Model (scikit-learn only) clustering, plus hierarchical/agglomerative
+clustering using `SciPy`. Alternatively, you can create clustergram using  `from_*`
+constructors based on alternative clustering algorithms.
 
 ## Getting started
 
@@ -26,8 +40,8 @@ conda install clustergram -c conda-forge
 pip install clustergram
 ```
 
-In any case, you still need to install your selected backend
-(`scikit-learn` and `scipy` or `cuML`).
+In any case, you still need to install your selected backend (`scikit-learn` and `scipy`
+or `cuML`).
 
 The example of clustergram on Palmer penguins dataset:
 
@@ -53,11 +67,13 @@ cgram.fit(data)
 cgram.plot()
 ```
 
-![Default clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/default.png)
+![Default
+clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/default.png)
 
 ## Styling
 
-`Clustergram.plot()` returns matplotlib axis and can be fully customised as any other matplotlib plot.
+`Clustergram.plot()` returns matplotlib axis and can be fully customised as any other
+matplotlib plot.
 
 ```python
 seaborn.set(style='whitegrid')
@@ -71,29 +87,38 @@ cgram.plot(
     figsize=(12, 8)
 )
 ```
-![Colored clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/colors.png)
+
+![Colored
+clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/colors.png)
 
 ## Mean options
 
-On the `y` axis, a clustergram can use mean values as in the original paper by Matthias Schonlau or PCA weighted mean values as in the implementation by Tal Galili.
+On the `y` axis, a clustergram can use mean values as in the original paper by Matthias
+Schonlau or PCA weighted mean values as in the implementation by Tal Galili.
 
 ```python
 cgram = Clustergram(range(1, 8))
 cgram.fit(data)
 cgram.plot(figsize=(12, 8), pca_weighted=True)
 ```
-![Default clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/pca_true.png)
+
+![Default
+clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/pca_true.png)
 
 ```python
 cgram = Clustergram(range(1, 8))
 cgram.fit(data)
 cgram.plot(figsize=(12, 8), pca_weighted=False)
 ```
-![Default clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/pca_false.png)
+
+![Default
+clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/pca_false.png)
 
 ## Scikit-learn, SciPy and RAPIDS cuML backends
 
-Clustergram offers three backends for the computation - `scikit-learn` and `scipy` which use CPU and RAPIDS.AI `cuML`, which uses GPU. Note that all are optional dependencies but you will need at least one of them to generate clustergram.
+Clustergram offers three backends for the computation - `scikit-learn` and `scipy` which
+use CPU and RAPIDS.AI `cuML`, which uses GPU. Note that all are optional dependencies
+but you will need at least one of them to generate clustergram.
 
 Using `scikit-learn` (default):
 
@@ -111,11 +136,15 @@ cgram.fit(data)
 cgram.plot()
 ```
 
-`data` can be all data types supported by the selected backend (including `cudf.DataFrame` with `cuML` backend).
+`data` can be all data types supported by the selected backend (including
+`cudf.DataFrame` with `cuML` backend).
 
 ## Supported methods
 
-Clustergram currently supports K-Means, Mini Batch K-Means, Gaussian Mixture Model and SciPy's hierarchical clustering methods. Note tha GMM and Mini Batch K-Means are supported only for `scikit-learn` backend and hierarchical methods are supported only for `scipy` backend.
+Clustergram currently supports K-Means, Mini Batch K-Means, Gaussian Mixture Model and
+SciPy's hierarchical clustering methods. Note tha GMM and Mini Batch K-Means are
+supported only for `scikit-learn` backend and hierarchical methods are supported only
+for `scipy` backend.
 
 Using K-Means (default):
 
@@ -151,7 +180,8 @@ cgram.plot()
 
 ## Manual input
 
-Alternatively, you can create clustergram using `from_data` or  `from_centers` methods based on alternative clustering algorithms.
+Alternatively, you can create clustergram using `from_data` or  `from_centers` methods
+based on alternative clustering algorithms.
 
 Using `Clustergram.from_data` which creates cluster centers as mean or median values:
 
@@ -185,28 +215,36 @@ cgram.plot()
 
 ## Partial plot
 
-`Clustergram.plot()` can also plot only a part of the diagram, if you want to focus on a limited range of `k`.
+`Clustergram.plot()` can also plot only a part of the diagram, if you want to focus on a
+limited range of `k`.
 
 ```python
 cgram = Clustergram(range(1, 20))
 cgram.fit(data)
 cgram.plot(figsize=(12, 8))
 ```
-![Long clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/20_clusters.png)
+
+![Long
+clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/20_clusters.png)
 
 ```python
 cgram.plot(k_range=range(3, 10), figsize=(12, 8))
 ```
-![Limited clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/limited_plot.png)
+
+![Limited
+clustergram](https://raw.githubusercontent.com/martinfleis/clustergram/master/doc/_static/limited_plot.png)
 
 ## Additional clustering performance evaluation
 
-Clustergam includes handy wrappers around a selection of clustering performance metrics offered by
-`scikit-learn`. Data which were originally computed on GPU are converted to numpy on the fly.
+Clustergam includes handy wrappers around a selection of clustering performance metrics
+offered by `scikit-learn`. Data which were originally computed on GPU are converted to
+numpy on the fly.
 
 ### Silhouette score
 
-Compute the mean Silhouette Coefficient of all samples. See [`scikit-learn` documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_score.html#sklearn.metrics.silhouette_score) for details.
+Compute the mean Silhouette Coefficient of all samples. See [`scikit-learn`
+documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_score.html#sklearn.metrics.silhouette_score)
+for details.
 
 ```python
 >>> cgram.silhouette_score()
@@ -218,11 +256,16 @@ Compute the mean Silhouette Coefficient of all samples. See [`scikit-learn` docu
 7    0.331575
 Name: silhouette_score, dtype: float64
 ```
-Once computed, resulting Series is available as `cgram.silhouette`. Calling the original method will recompute the score.
+
+Once computed, resulting Series is available as `cgram.silhouette`. Calling the original
+method will recompute the score.
 
 ### Calinski and Harabasz score
 
-Compute the Calinski and Harabasz score, also known as the Variance Ratio Criterion. See [`scikit-learn` documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.calinski_harabasz_score.html#sklearn.metrics.calinski_harabasz_score) for details.
+Compute the Calinski and Harabasz score, also known as the Variance Ratio Criterion. See
+[`scikit-learn`
+documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.calinski_harabasz_score.html#sklearn.metrics.calinski_harabasz_score)
+for details.
 
 ```python
 >>> cgram.calinski_harabasz_score()
@@ -234,11 +277,15 @@ Compute the Calinski and Harabasz score, also known as the Variance Ratio Criter
 7    352.447569
 Name: calinski_harabasz_score, dtype: float64
 ```
-Once computed, resulting Series is available as `cgram.calinski_harabasz`. Calling the original method will recompute the score.
+
+Once computed, resulting Series is available as `cgram.calinski_harabasz`. Calling the
+original method will recompute the score.
 
 ### Davies-Bouldin score
 
-Compute the Davies-Bouldin score. See [`scikit-learn` documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.davies_bouldin_score.html#sklearn.metrics.davies_bouldin_score) for details.
+Compute the Davies-Bouldin score. See [`scikit-learn`
+documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.davies_bouldin_score.html#sklearn.metrics.davies_bouldin_score)
+for details.
 
 ```python
 >>> cgram.davies_bouldin_score()
@@ -250,11 +297,14 @@ Compute the Davies-Bouldin score. See [`scikit-learn` documentation](https://sci
 7    1.074937
 Name: davies_bouldin_score, dtype: float64
 ```
-Once computed, resulting Series is available as `cgram.davies_bouldin`. Calling the original method will recompute the score.
+
+Once computed, resulting Series is available as `cgram.davies_bouldin`. Calling the
+original method will recompute the score.
 
 ## Acessing labels
 
-`Clustergram` stores resulting labels for each of the tested options, which can be accessed as:
+`Clustergram` stores resulting labels for each of the tested options, which can be
+accessed as:
 
 ```python
 >>> cgram.labels
@@ -278,7 +328,8 @@ You can save both plot and `clustergram.Clustergram` to a disk.
 
 ### Saving plot
 
-`Clustergram.plot()` returns matplotlib axis object and as such can be saved as any other plot:
+`Clustergram.plot()` returns matplotlib axis object and as such can be saved as any
+other plot:
 
 ```python
 import matplotlib.pyplot as plt
@@ -289,7 +340,8 @@ plt.savefig('clustergram.svg')
 
 ### Saving object
 
-If you want to save your computed `clustergram.Clustergram` object to a disk, you can use `pickle` library:
+If you want to save your computed `clustergram.Clustergram` object to a disk, you can
+use `pickle` library:
 
 ```python
 import pickle
@@ -306,8 +358,11 @@ with open('clustergram.pickle','rb') as f:
 ```
 
 ## References
-Schonlau M. The clustergram: a graph for visualizing hierarchical and non-hierarchical cluster analyses. The Stata Journal, 2002; 2 (4):391-402.
 
-Schonlau M. Visualizing Hierarchical and Non-Hierarchical Cluster Analyses with Clustergrams. Computational Statistics: 2004; 19(1):95-111.
+Schonlau M. The clustergram: a graph for visualizing hierarchical and non-hierarchical
+cluster analyses. The Stata Journal, 2002; 2 (4):391-402.
+
+Schonlau M. Visualizing Hierarchical and Non-Hierarchical Cluster Analyses with
+Clustergrams. Computational Statistics: 2004; 19(1):95-111.
 
 [https://www.r-statistics.com/2010/06/clustergram-visualization-and-diagnostics-for-cluster-analysis-r-code/](https://www.r-statistics.com/2010/06/clustergram-visualization-and-diagnostics-for-cluster-analysis-r-code/)

@@ -18,15 +18,16 @@ bibliography: paper.bib
 
 # Summary
 
-Given a heterogeneous group of observations, research often tries to find homogenous
-groups within them. Typical is the use of clustering algorithms determining these groups
-based on statistical similarity. While there is an extensive range of algorithms to be
-chosen from, they often share one specific limitation - the algorithm itself will not
-determine the optimal number of clusters a group of observations shall be divided into.
-This paper presents a Python package named `clustergram` providing tools to analyze the
-clustering solutions and visualize the behavior of observations in relation to a set
-number of classes, enabling a deeper understanding of the behavior of the set of
-observations and better-informed decisions on the optimal number of classes.
+Given a heterogeneous group of observations, research often tries to find more
+homogenous groups within them. Typical is the use of clustering algorithms determining
+these groups based on statistical similarity. While there is an extensive range of
+algorithms to be chosen from, they often share one specific limitation - the algorithm
+itself will not determine the optimal number of clusters a group of observations shall
+be divided into. This paper presents a Python package named `clustergram` providing
+tools to analyze the clustering solutions and visualize the behavior of observations in
+relation to a tested range of options for the number of classes, enabling a deeper
+understanding of the behavior of observations splitting into classes and better-informed
+decisions on the optimal number of classes.
 
 The situation the package is dealing with can be illustrated on one of the most commonly
 used clustering algorithms, K-Means. The algorithm first sets a pre-defined number of
@@ -37,10 +38,11 @@ clustering solution is therefore created for a range of viable solutions (usuall
 to N) that are compared and assessed based on various criteria, be it a so-called
 _"elbow plot"_ of silhouette score looking for the "elbow" on a curve or a related
 silhouette analysis, or using other evaluation metrics. Most of them have in common that
-they treat each clustering option separately, without a relation between, e.g., 3 and 4
-clusters and behavior of observations between these two options. To alleviate the
-situation and shed more light on the dynamics of _reshuffling_ of observations between
-clusters, @schonlau2002clustergram proposed a new visual method called _"clustergram"_.
+they treat each clustering option separately, without a relation between, e.g., when
+testing 3 and 4 clusters, the behavior of observations between these two options is not
+considered. To alleviate the situation and shed more light on the dynamics of
+_reshuffling_ of observations between clusters, @schonlau2002clustergram proposed a new
+visual method called _"clustergram"_.
 
 Clustergrams take the shape of a hierarchical diagram displaying a range of clustering
 options (number of clusters) on (usually) the X-axis and cluster centers for each
@@ -56,20 +58,21 @@ The Python package presented in this paper provides tools to create and explore
 clustergrams in Python based on a number of built-in clustering algorithms but also on
 external input resulting from other algorithms. The API is organized around a single
 overarching `clustergram.Clustergram` class designed around scikit-learn's API style
-[@scikit-learn] with initialization of the class with the specifications and the `fit`
-method, making it familiar to existing users of scikit-learn and similarly-designed
-packages. In its core, the class expects a selection of a range of solutions to be
-tested (`k_range`) from 1 to N, a selection of clustering algorithm (`method`) and a
-specification of a backend used for computation. Here, `clustergram` offers a choice
-between backends written to run on a CPU (`scikit-learn` for K-Means, Mini-batch K-Means
-and Gaussian Mixture Models, `scipy` [@2020SciPy-NMeth] for hierarchical (or
-agglomerative) algorithms) or a GPU (`cuML` [@raschka2020machine]), where the GPU path
-is computing both clustering and the underlying data for clustergram visualization on
-GPU, minimizing the need of data transfer between both. Suppose none of the built-in
-options is suited for a set use case. In that case, the clustergram data structure can
-be created either from original data and labels for individual cluster solutions
-(`from_data()` method) or from cluster centers (`from_centers()` method), depending on
-the information obtainable from the selected external clustering algorithm.
+[@scikit-learn] with initialization of the class with the specification of arguments and
+the `fit` method, making it familiar to existing users of scikit-learn and
+similarly-designed packages. In its core, the class expects a selection of a range of
+solutions to be tested (`k_range`) from 1 to N, a selection of clustering algorithm
+(`method`) and a specification of a backend used for computation. Here, `clustergram`
+offers a choice between backends written to run on a CPU (`scikit-learn` for K-Means,
+Mini-batch K-Means and Gaussian Mixture Models, `scipy` [@2020SciPy-NMeth] for
+hierarchical (or agglomerative) algorithms) or a GPU (`cuML` [@raschka2020machine] for
+K-Means), where the GPU path is computing both clustering and the underlying data for
+clustergram visualization on GPU, minimizing the need of data transfer between both.
+Furthermore, suppose none of the built-in options is suited for a set use case. In that
+case, the clustergram data structure can be created either from original data and labels
+for individual cluster solutions (`from_data()` method) or from cluster centers
+(`from_centers()` method), depending on the information obtainable from the selected
+external clustering algorithm.
 
 ![Clustergram based on the K-Means clustering algorithm as implemented in the
 scikit-learn package based on Palmer penguins dataset (@palmerpenguins). The cluster

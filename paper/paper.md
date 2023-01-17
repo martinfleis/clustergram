@@ -126,15 +126,15 @@ implementation. Since the first release of `clustergram` in November 2020 (and
 publishing a blog post in April 2021), the package has been used in at least seven
 academic publications, ranging from the classification of geographical areas based on
 form and function [@arribas-bel2022Spatiala; @fleischmann2022Geographicala;
-@samardzhiev2022Functionala], clustering of the latent representation from convolutional
-neural networks [@singleton2022Estimatinga], classification of high Arctic lakes
-[@urbanski2022Monitoring] to facility reliability assessment [@stewart2022Addressing]
-and genomic data science [@ma2022Abstract]. Since none of these directly cite the
-software, it is likely an incomplete overview. While researchers can still use the
-traditional set of metrics to estimate the optimal number of classes, none, including
-clustergram, is the ultimate answer without any drawbacks. What makes clustergram unique
-is the reflection of the dynamics of the sequence of solutions and the visualization of
-the behavior of observations within it.
+@samardzhiev2022Functionala], geodemographics [@yang2022Ageing], clustering of the
+latent representation from convolutional neural networks [@singleton2022Estimatinga],
+classification of high Arctic lakes [@urbanski2022Monitoring] to facility reliability
+assessment [@stewart2022Addressing] and genomic data science [@ma2022Abstract]. Since
+none of these directly cite the software, it is likely an incomplete overview. While
+researchers can still use the traditional set of metrics to estimate the optimal number
+of classes, none, including clustergram, is the ultimate answer without any drawbacks.
+What makes clustergram unique is the reflection of the dynamics of the sequence of
+solutions and the visualization of the behavior of observations within it.
 
 # Acknowledgements
 

@@ -6,11 +6,9 @@ repos:
       - id: black
         language_version: python3
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.0.223"
+    rev: "v0.0.230"
     hooks:
       - id: ruff
-        # Respect `exclude` and `extend-exclude` settings.
-        args: ["--force-exclude"]
 
 ci:
   autofix_prs: false

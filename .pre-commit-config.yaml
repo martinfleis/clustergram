@@ -9,8 +9,6 @@ repos:
     rev: "v0.0.230"
     hooks:
       - id: ruff
-        # Respect `exclude` and `extend-exclude` settings.
-        args: ["--force-exclude"]
 
 ci:
   autofix_prs: false

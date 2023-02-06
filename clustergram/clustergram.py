@@ -232,7 +232,6 @@ class Clustergram:
         self.cluster_centers = {}
 
         for n in self.k_range:
-
             if n == 1:
                 self.labels[n] = [0] * len(data)
                 self.cluster_centers[n] = np.array([data.mean(axis=0)])
@@ -270,7 +269,6 @@ class Clustergram:
         self.cluster_centers = {}
 
         for n in self.k_range:
-
             if n == 1:
                 self.labels[n] = [0] * len(data)
                 if isinstance(data, cudf.DataFrame):
@@ -716,12 +714,10 @@ class Clustergram:
 
         n_pca = pca_kwargs["n_components"]
         if n_pca > self._n_pca:
-
             self._n_pca = n_pca
             self.pca = PCA(**pca_kwargs).fit(self.data)
 
         if self.plot_data_pca[n_pca].empty:
-
             for n in self.k_range:
                 means = self.cluster_centers[n].dot(self.pca.components_[n_pca - 1])
                 self.plot_data_pca[n_pca][n] = np.take(means, self.labels[n].values)
@@ -744,12 +740,10 @@ class Clustergram:
 
         n_pca = pca_kwargs["n_components"]
         if n_pca > self._n_pca:
-
             self._n_pca = n_pca
             self.pca = PCA(**pca_kwargs).fit(self.data)
 
         if self.plot_data_pca[n_pca].empty:
-
             for n in self.k_range:
                 means = (
                     self.cluster_centers[n].values.dot(

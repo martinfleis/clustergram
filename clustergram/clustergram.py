@@ -68,14 +68,14 @@ class Clustergram:
 
     Attributes
     ----------
-    labels : DataFrame
-        DataFrame with cluster labels for each iteration.
-    cluster_centers : dict
-        Dictionary with cluster centers for each iteration.
-    linkage : scipy.cluster.hierarchy.linkage
-        Linkage object for hierarchical methods.
-    bic : Series
-        Bayesian Information Criterion for each iteration for Gaussian Mixture Model.
+    labels_ : DataFrame
+        DataFrame with cluster labels for each option.
+    cluster_centers_ : dict
+        Dictionary with cluster centers for each option.
+    linkage_ : numpy.ndarray
+        The hierarchical clustering encoded as a linkage matrix.
+    bic_ : Series
+        Bayesian Information Criterion for each option for Gaussian Mixture Model.
         Stored only if ``method='gmm'`` and ``bic=True``
 
 
@@ -547,7 +547,7 @@ class Clustergram:
 
         Once computed:
 
-        >>> c_gram.silhouette
+        >>> c_gram.silhouette_
         2    0.702450
         3    0.644272
         4    0.767728
@@ -579,6 +579,10 @@ class Clustergram:
                         data, self.labels[k].to_pandas(), **kwargs
                     )
 
+        return self.silhouette
+
+    @property
+    def silhouette_(self):
         return self.silhouette
 
     def calinski_harabasz_score(self):
@@ -616,7 +620,7 @@ class Clustergram:
 
         Once computed:
 
-        >>> c_gram.calinski_harabasz
+        >>> c_gram.calinski_harabasz_
         2      23.176629
         3      30.643018
         4      55.223336
@@ -650,6 +654,10 @@ class Clustergram:
                     self.calinski_harabasz.loc[k] = metrics.calinski_harabasz_score(
                         data, self.labels[k].to_pandas()
                     )
+        return self.calinski_harabasz
+
+    @property
+    def calinski_harabasz_(self):
         return self.calinski_harabasz
 
     def davies_bouldin_score(self):
@@ -718,6 +726,10 @@ class Clustergram:
                         data, self.labels[k].to_pandas()
                     )
 
+        return self.davies_bouldin
+
+    @property
+    def davies_bouldin_(self):
         return self.davies_bouldin
 
     def _compute_pca_means_sklearn(self, **pca_kwargs):
@@ -1135,3 +1147,48 @@ class Clustergram:
         fig.xaxis.ticker = SingleIntervalTicker(interval=1)
 
         return fig
+
+    @property
+    def labels_(self):
+        """DataFrame with cluster labels for each option.
+
+        Returns
+        -------
+        DataFrame
+            DataFrame of ``labels_`` for each clustering option
+        """
+        return self.labels
+
+    @property
+    def cluster_centers_(self):
+        """Dictionary with cluster centers for each option.
+
+        Returns
+        -------
+        dict
+            Dictionary of ``cluster_centers_`` with cluster centers for each option.
+        """
+        return self.cluster_centers
+
+    @property
+    def linkage_(self):
+        """Linkage for hierarchical methods.
+
+        Returns
+        -------
+        numpy.ndarray
+            The hierarchical clustering encoded as a linkage matrix.
+        """
+        return self.linkage
+
+    @property
+    def bic_(self):
+        """Bayesian Information Criterion for each option for Gaussian Mixture Model.
+        Stored only if ``method='gmm'`` and ``bic=True``
+
+        Returns
+        -------
+        Series
+            Series of BIC for each option
+        """
+        return self.bic

@@ -1,9 +1,12 @@
+from distutils.version import Version
 import numpy as np
 import pandas as pd
 import pytest
 from bokeh.embed import json_item
 from pandas.testing import assert_series_equal
 from sklearn.datasets import make_blobs
+import sklearn
+from packaging.version import Version
 
 try:
     import cudf
@@ -15,6 +18,8 @@ except (ImportError, ModuleNotFoundError):
     RAPIDS = False
 
 from clustergram import Clustergram
+
+SKLEARN_GE_130 = Version(sklearn.__version__) >= Version("1.3.0")
 
 n_samples = 100
 n_features = 2
@@ -85,32 +90,43 @@ def test_sklearn_minibatchkmeans():
     assert clustergram.labels.shape == (100, 7)
     assert clustergram.labels.notna().all().all()
 
-    expected = [
-        1.439891622331535,
-        1.5942431676314943,
-        -0.9391362578715787,
-        0.16457587659721762,
-        0.7988407523191436,
-        0.9230637622852088,
-        1.0250449911587773,
-    ]
+    if SKLEARN_GE_130:
+        expected = [
+            1.4398916223315352,
+            -2.814948296113636,
+            -0.9480789623087609,
+            0.16386129565976848,
+            0.7986914907115288,
+            0.8009112813583883,
+            1.0251523342385347,
+        ]
+    else:
+        expected = [
+            1.439891622331535,
+            1.5942431676314943,
+            -0.9391362578715787,
+            0.16457587659721762,
+            0.7988407523191436,
+            0.9230637622852088,
+            1.0250449911587773,
+        ]
     assert expected == [
         pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-12)
         for x in range(1, 8)
     ]
 
     ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
-    assert len(ax.get_children()) == 45
+    assert len(ax.get_children()) == 46 if SKLEARN_GE_130 else 45
 
     assert clustergram.plot_data.empty
     ax = clustergram.plot(pca_weighted=False)
-    assert len(ax.get_children()) == 45
+    assert len(ax.get_children()) == 46 if SKLEARN_GE_130 else 45
 
     assert clustergram.plot_data_pca[1].mean().mean() == pytest.approx(
-        -2.153978086091386, rel=1e-4
+        -2.0974466923993482 if SKLEARN_GE_130 else -2.153978086091386, rel=1e-4
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
-        1.477158426841248, rel=1e-4
+        1.4441508195691932 if SKLEARN_GE_130 else 1.477158426841248, rel=1e-4
     )
 
 
@@ -125,15 +141,26 @@ def test_sklearn_gmm():
     assert clustergram.labels.shape == (100, 7)
     assert clustergram.labels.notna().all().all()
 
-    expected = [
-        1.4886908509157464,
-        -2.8599808770366817,
-        -0.8823883211732156,
-        0.18416419702253917,
-        0.08229356227237798,
-        0.6537149985640699,
-        0.927345926721354,
-    ]
+    if SKLEARN_GE_130:
+        expected = [
+            1.4886908509157464,
+            -2.8599808770366817,
+            -0.8823883211732153,
+            0.1841641970225396,
+            0.8494957936225376,
+            0.963548585120968,
+            0.9273459267213541,
+        ]
+    else:
+        expected = [
+            1.4886908509157464,
+            -2.8599808770366817,
+            -0.8823883211732156,
+            0.18416419702253917,
+            0.08229356227237798,
+            0.6537149985640699,
+            0.927345926721354,
+        ]
     assert expected == [
         pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-6)
         for x in range(1, 8)
@@ -147,10 +174,10 @@ def test_sklearn_gmm():
     assert len(ax.get_children()) == 44
 
     assert clustergram.plot_data_pca[1].mean().mean() == pytest.approx(
-        -1.9629843968429452, rel=1e-4
+        -2.153817166750229 if SKLEARN_GE_130 else -1.9629843968429452, rel=1e-4
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
-        1.3321040444661392, rel=1e-4
+        1.4636749962003583 if SKLEARN_GE_130 else 1.3321040444661392, rel=1e-4
     )
 
 
@@ -164,8 +191,18 @@ def test_bic():
     )
     clustergram.fit(data)
 
-    expected = pd.Series(
-        [
+    if SKLEARN_GE_130:
+        expected = [
+            1226.7924019554766,
+            948.6374834781365,
+            800.1788609508928,
+            687.5987056807202,
+            592.5105068854707,
+            382.07390654047344,
+            306.6669136240255,
+        ]
+    else:
+        expected = [
             1226.7924019554766,
             948.6374834781362,
             800.1788609508928,
@@ -173,7 +210,10 @@ def test_bic():
             497.2770114251739,
             402.1340827435864,
             306.6669136240255,
-        ],
+        ]
+
+    expected = pd.Series(
+        expected,
         index=range(1, 8),
     )
 

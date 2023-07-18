@@ -126,15 +126,17 @@ class Clustergram:
             f"method='{self.method}', kwargs={self.kwargs})"
         )
 
-    def fit(self, data, **kwargs):
+    def fit(self, X, y=None, **kwargs):  # noqa
         """
         Compute clustering for each k within set range.
 
         Parameters
         ----------
-        data : array-like
+        X : array-like
             Input data to be clustered. It is expected that data are scaled. Can be
             ``numpy.array``, ``pandas.DataFrame`` or their RAPIDS counterparts.
+        y : ignored
+            Not used, present here for API consistency by convention.
         **kwargs
             Additional arguments passed to the ``.fit()`` method of the model,
             e.g. ``sample_weight``.
@@ -200,18 +202,18 @@ class Clustergram:
             self.plot_data = cudf.DataFrame()
             self.plot_data_pca = defaultdict(cudf.DataFrame)
 
-        self.data = data
+        self.data = X
         if self._backend == "sklearn":
             if self.method == "kmeans":
-                self._kmeans_sklearn(data, minibatch=False, **kwargs)
+                self._kmeans_sklearn(X, minibatch=False, **kwargs)
             elif self.method == "minibatchkmeans":
-                self._kmeans_sklearn(data, minibatch=True, **kwargs)
+                self._kmeans_sklearn(X, minibatch=True, **kwargs)
             elif self.method == "gmm":
-                self._gmm_sklearn(data, **kwargs)
+                self._gmm_sklearn(X, **kwargs)
         if self._backend == "cuML":
-            self._kmeans_cuml(data, **kwargs)
+            self._kmeans_cuml(X, **kwargs)
         if self._backend == "scipy":
-            self._scipy_hierarchical(data, **kwargs)
+            self._scipy_hierarchical(X, **kwargs)
 
     def _kmeans_sklearn(self, data, minibatch, **kwargs):
         """Use scikit-learn KMeans."""
@@ -308,7 +310,7 @@ class Clustergram:
         for n in self.k_range:
             s = time()
             clean_kwargs = self.kwargs.copy()
-            clean_kwargs.pop("bic")
+            clean_kwargs.pop("bic", None)
             results = GaussianMixture(n_components=n, **clean_kwargs).fit(
                 data, **kwargs
             )

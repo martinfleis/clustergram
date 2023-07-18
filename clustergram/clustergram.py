@@ -252,7 +252,9 @@ class Clustergram:
             self.labels[n] = results.labels_
             self.cluster_centers[n] = results.cluster_centers_
 
-            print(f"K={n} fitted in {time() - s} seconds.") if self.verbose else None
+            print(
+                f"K={n} fitted in {(time() - s):.3f} seconds."
+            ) if self.verbose else None
 
     def _kmeans_cuml(self, data, **kwargs):
         """Use cuML KMeans."""
@@ -289,7 +291,9 @@ class Clustergram:
             self.labels[n] = results.labels_
             self.cluster_centers[n] = results.cluster_centers_
 
-            print(f"K={n} fitted in {time() - s} seconds.") if self.verbose else None
+            print(
+                f"K={n} fitted in {(time() - s):.3f} seconds."
+            ) if self.verbose else None
 
     def _gmm_sklearn(self, data, **kwargs):
         """Use sklearn.mixture.GaussianMixture."""
@@ -333,7 +337,9 @@ class Clustergram:
             self.labels[n] = results.predict(data)
             self.cluster_centers[n] = centers
 
-            print(f"K={n} fitted in {time() - s} seconds.") if self.verbose else None
+            print(
+                f"K={n} fitted in {(time() - s):.3f} seconds."
+            ) if self.verbose else None
 
     def _scipy_hierarchical(self, data):
         """Use scipy.cluster.hierarchy.linkage."""

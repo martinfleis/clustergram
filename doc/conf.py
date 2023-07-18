@@ -41,6 +41,7 @@ extensions = [
 
 nb_execution_mode = "force"
 nb_execution_allow_errors = True
+nb_execution_excludepatterns = ["methods.ipynb"]
 
 autosummary_generate = True
 numpydoc_show_class_members = True

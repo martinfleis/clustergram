@@ -1,5 +1,5 @@
 """Clustergram - visualization and diagnostics for cluster analysis in Python.
-Copyright (C) 2020-2021  Martin Fleischmann
+Copyright (C) 2020-  Martin Fleischmann
 
 Original idea is by Matthias Schonlau - http://www.schonlau.net/clustergram.html.
 """

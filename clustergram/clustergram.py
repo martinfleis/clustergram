@@ -853,6 +853,8 @@ class Clustergram:
         Those are computed on the first call of each option (pca_weighted=True/False).
 
         """
+        from matplotlib.ticker import MaxNLocator
+
         pca_kwargs["n_components"] = pca_component
         self._compute_means(pca_weighted, pca_kwargs)
 
@@ -927,6 +929,11 @@ class Clustergram:
                         solid_capstyle=solid_capstyle,
                         **line_style,
                     )
+
+        # restrict ticks to integer values only
+        x_axis = ax.get_xaxis()
+        x_axis.set_major_locator(MaxNLocator(integer=True))
+
         return ax
 
     def bokeh(
@@ -1010,7 +1017,7 @@ class Clustergram:
 
         """
         try:
-            from bokeh.models import HoverTool
+            from bokeh.models import HoverTool, SingleIntervalTicker
             from bokeh.plotting import ColumnDataSource, figure
         except ImportError as e:
             raise ImportError(
@@ -1111,5 +1118,8 @@ class Clustergram:
         )
         hover = HoverTool(tooltips=tooltips, renderers=[circle])
         fig.add_tools(hover)
+
+        # restrict ticks to integer values only
+        fig.xaxis.ticker = SingleIntervalTicker(interval=1)
 
         return fig

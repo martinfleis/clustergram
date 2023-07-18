@@ -797,6 +797,7 @@ def test_bokeh():
     assert "count" in out
     assert "ratio" in out
     assert "size" in out
+    assert "'name': 'SingleIntervalTicker'" in out
 
     f = clustergram.bokeh(pca_weighted=False)
     out = str(json_item(f, "clustergram"))
@@ -806,6 +807,7 @@ def test_bokeh():
     assert "count" in out
     assert "ratio" in out
     assert "size" in out
+    assert "'name': 'SingleIntervalTicker'" in out
 
 
 @pytest.mark.skipif(
@@ -896,3 +898,27 @@ def test_custom_pca_cuml():
     assert clustergram.plot_data_pca[3].mean().mean() == pytest.approx(
         -0.7938977877582821, rel=1e-4
     )
+
+
+def test_plot_integer_ticks():
+    device_data, device_labels = make_blobs(
+        n_samples=n_samples,
+        n_features=n_features,
+        centers=n_clusters,
+        random_state=random_state,
+        cluster_std=0.1,
+    )
+    clustergram = Clustergram(
+        range(1, 5),
+        random_state=random_state,
+    )
+    clustergram.fit(data)
+    ax = clustergram.plot()
+    assert [item.get_text() for item in ax.get_xticklabels()] == [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+    ]

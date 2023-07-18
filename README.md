@@ -259,7 +259,7 @@ for details.
 Name: silhouette_score, dtype: float64
 ```
 
-Once computed, resulting Series is available as `cgram.silhouette`. Calling the original
+Once computed, the resulting Series is available as `cgram.silhouette_`. Calling the original
 method will recompute the score.
 
 ### Calinski and Harabasz score
@@ -280,7 +280,7 @@ for details.
 Name: calinski_harabasz_score, dtype: float64
 ```
 
-Once computed, resulting Series is available as `cgram.calinski_harabasz`. Calling the
+Once computed, the resulting Series is available as `cgram.calinski_harabasz_`. Calling the
 original method will recompute the score.
 
 ### Davies-Bouldin score
@@ -300,16 +300,16 @@ for details.
 Name: davies_bouldin_score, dtype: float64
 ```
 
-Once computed, resulting Series is available as `cgram.davies_bouldin`. Calling the
+Once computed, the resulting Series is available as `cgram.davies_bouldin_`. Calling the
 original method will recompute the score.
 
-## Acessing labels
+## Accessing labels
 
 `Clustergram` stores resulting labels for each of the tested options, which can be
 accessed as:
 
 ```python
->>> cgram.labels
+>>> cgram.labels_
      1  2  3  4  5  6  7
 0    0  0  2  2  3  2  1
 1    0  0  2  2  3  2  1
@@ -326,7 +326,7 @@ accessed as:
 
 ## Saving clustergram
 
-You can save both plot and `clustergram.Clustergram` to a disk.
+You can save both the plot and `clustergram.Clustergram` to a disk.
 
 ### Saving plot
 

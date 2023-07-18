@@ -41,7 +41,8 @@ data = pd.DataFrame(device_data)
 
 def test_sklearn_kmeans():
     clustergram = Clustergram(range(1, 8), backend="sklearn", random_state=random_state)
-    clustergram.fit(data)
+    cgram = clustergram.fit(data)
+    assert isinstance(cgram, Clustergram)
 
     for i in range(1, 8):
         assert clustergram.labels[i].nunique() == i
@@ -75,6 +76,9 @@ def test_sklearn_kmeans():
     assert clustergram.plot_data.mean().mean() == pytest.approx(
         1.4398916223315354, rel=1e-4
     )
+
+    assert isinstance(clustergram.labels_, pd.DataFrame)
+    assert isinstance(clustergram.cluster_centers_, dict)
 
 
 def test_sklearn_minibatchkmeans():
@@ -130,6 +134,9 @@ def test_sklearn_minibatchkmeans():
         1.4441508195691932 if SKLEARN_GE_130 else 1.477158426841248, rel=1e-4
     )
 
+    assert isinstance(clustergram.labels_, pd.DataFrame)
+    assert isinstance(clustergram.cluster_centers_, dict)
+
 
 def test_sklearn_gmm():
     clustergram = Clustergram(
@@ -181,6 +188,9 @@ def test_sklearn_gmm():
         1.4636749962003583 if SKLEARN_GE_130 else 1.3321040444661392, rel=1e-4
     )
 
+    assert isinstance(clustergram.labels_, pd.DataFrame)
+    assert isinstance(clustergram.cluster_centers_, dict)
+
 
 def test_bic():
     clustergram = Clustergram(
@@ -219,6 +229,8 @@ def test_bic():
     )
 
     assert_series_equal(expected, clustergram.bic, rtol=1e-6)
+
+    assert isinstance(clustergram.bic_, pd.Series)
 
     clustergram = Clustergram(
         range(1, 8),
@@ -366,6 +378,8 @@ def test_hierarchical():
         1.4398916223315354, rel=1e-4
     )
 
+    assert isinstance(clustergram.linkage_, np.ndarray)
+
 
 def test_hierarchical_array():
     clustergram = Clustergram(method="hierarchical", k_range=range(1, 10))
@@ -379,17 +393,17 @@ def test_hierarchical_array():
 
 def test_errors():
     with pytest.raises(ValueError):
-        Clustergram(range(1, 3), backend="nonsense")
+        Clustergram(range(1, 3), backend="nonsense").fit(data)
     with pytest.raises(ValueError):
-        Clustergram(range(1, 3), method="nonsense")
+        Clustergram(range(1, 3), method="nonsense").fit(data)
     with pytest.raises(ValueError):
-        Clustergram(range(1, 3), method="kmeans", backend="scipy")
+        Clustergram(range(1, 3), method="kmeans", backend="scipy").fit(data)
     with pytest.raises(ValueError):
-        Clustergram(range(1, 3), method="hieararchical", backend="sklearn")
+        Clustergram(range(1, 3), method="hieararchical", backend="sklearn").fit(data)
     with pytest.raises(ValueError):
-        Clustergram(range(1, 3), method="gmm", backend="cuML")
+        Clustergram(range(1, 3), method="gmm", backend="cuML").fit(data)
     with pytest.raises(ValueError):
-        Clustergram()
+        Clustergram().fit(data)
 
 
 def test_repr():
@@ -397,7 +411,7 @@ def test_repr():
         "Clustergram(k_range=range(1, 30), backend='sklearn', "
         "method='kmeans', kwargs={'n_init': 10})"
     )
-    clustergram = Clustergram(range(1, 30), n_init=10)
+    clustergram = Clustergram(range(1, 30), n_init=10, backend="sklearn")
     assert expected == clustergram.__repr__()
 
 
@@ -436,6 +450,8 @@ def test_silhouette_score():
             name="silhouette_score",
         ),
     )
+
+    assert isinstance(clustergram.silhouette_, pd.Series)
 
 
 @pytest.mark.skipif(
@@ -521,6 +537,8 @@ def test_calinski_harabasz_score():
             name="calinski_harabasz_score",
         ),
     )
+
+    assert isinstance(clustergram.calinski_harabasz_, pd.Series)
 
 
 @pytest.mark.skipif(
@@ -618,6 +636,8 @@ def test_davies_bouldin_score():
             name="davies_bouldin_score",
         ),
     )
+
+    assert isinstance(clustergram.davies_bouldin_, pd.Series)
 
 
 @pytest.mark.skipif(
@@ -900,13 +920,6 @@ def test_custom_pca_cuml():
 
 
 def test_plot_integer_ticks():
-    device_data, device_labels = make_blobs(
-        n_samples=n_samples,
-        n_features=n_features,
-        centers=n_clusters,
-        random_state=random_state,
-        cluster_std=0.1,
-    )
     clustergram = Clustergram(
         range(1, 5),
         random_state=random_state,

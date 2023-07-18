@@ -117,12 +117,11 @@ class Clustergram:
         self.method = method
         self.verbose = verbose
         self.kwargs = kwargs
-        self._n_pca = 0
-        self._link_pca = defaultdict(dict)
+        self._backend = backend
 
     def __repr__(self):
         return (
-            f"Clustergram(k_range={self.k_range}, backend='{self.backend}', "
+            f"Clustergram(k_range={self.k_range}, backend='{self._backend}', "
             f"method='{self.method}', kwargs={self.kwargs})"
         )
 
@@ -202,6 +201,9 @@ class Clustergram:
             self.plot_data = cudf.DataFrame()
             self.plot_data_pca = defaultdict(cudf.DataFrame)
 
+        self._n_pca = 0
+        self._link_pca = defaultdict(dict)
+
         self.data = X
         if self._backend == "sklearn":
             if self.method == "kmeans":
@@ -214,6 +216,8 @@ class Clustergram:
             self._kmeans_cuml(X, **kwargs)
         if self._backend == "scipy":
             self._scipy_hierarchical(X, **kwargs)
+
+        return self
 
     def _kmeans_sklearn(self, data, minibatch, **kwargs):
         """Use scikit-learn KMeans."""
@@ -420,6 +424,9 @@ class Clustergram:
         cgram.plot_data = pd.DataFrame()
         cgram.plot_data_pca = defaultdict(pd.DataFrame)
 
+        cgram._n_pca = 0
+        cgram._link_pca = defaultdict(dict)
+
         if data is not None:
             cgram.data = data
 
@@ -495,6 +502,9 @@ class Clustergram:
         cgram._backend = "sklearn"
         cgram.plot_data = pd.DataFrame()
         cgram.plot_data_pca = defaultdict(pd.DataFrame)
+
+        cgram._n_pca = 0
+        cgram._link_pca = defaultdict(dict)
 
         return cgram
 

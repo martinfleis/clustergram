@@ -41,7 +41,8 @@ data = pd.DataFrame(device_data)
 
 def test_sklearn_kmeans():
     clustergram = Clustergram(range(1, 8), backend="sklearn", random_state=random_state)
-    clustergram.fit(data)
+    cgram = clustergram.fit(data)
+    assert isinstance(cgram, Clustergram)
 
     for i in range(1, 8):
         assert clustergram.labels[i].nunique() == i

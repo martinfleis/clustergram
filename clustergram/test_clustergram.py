@@ -378,17 +378,17 @@ def test_hierarchical_array():
 
 def test_errors():
     with pytest.raises(ValueError):
-        Clustergram(range(1, 3), backend="nonsense")
+        Clustergram(range(1, 3), backend="nonsense").fit(data)
     with pytest.raises(ValueError):
-        Clustergram(range(1, 3), method="nonsense")
+        Clustergram(range(1, 3), method="nonsense").fit(data)
     with pytest.raises(ValueError):
-        Clustergram(range(1, 3), method="kmeans", backend="scipy")
+        Clustergram(range(1, 3), method="kmeans", backend="scipy").fit(data)
     with pytest.raises(ValueError):
-        Clustergram(range(1, 3), method="hieararchical", backend="sklearn")
+        Clustergram(range(1, 3), method="hieararchical", backend="sklearn").fit(data)
     with pytest.raises(ValueError):
-        Clustergram(range(1, 3), method="gmm", backend="cuML")
+        Clustergram(range(1, 3), method="gmm", backend="cuML").fit(data)
     with pytest.raises(ValueError):
-        Clustergram()
+        Clustergram().fit(data)
 
 
 def test_repr():
@@ -396,7 +396,7 @@ def test_repr():
         "Clustergram(k_range=range(1, 30), backend='sklearn', "
         "method='kmeans', kwargs={'n_init': 10})"
     )
-    clustergram = Clustergram(range(1, 30), n_init=10)
+    clustergram = Clustergram(range(1, 30), n_init=10, backend="sklearn")
     assert expected == clustergram.__repr__()
 
 

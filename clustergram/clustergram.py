@@ -113,73 +113,17 @@ class Clustergram:
         **kwargs,
     ):
         self.k_range = k_range
-
-        # cleanup after API change
-        kwargs.pop("pca_weighted", None)
-        kwargs.pop("pca_kwargs", None)
-
-        self.store_bic = kwargs.pop("bic", False)
-
-        if backend is None:
-            backend = "scipy" if method == "hierarchical" else "sklearn"
-
-        allowed_backends = ["sklearn", "cuML", "scipy"]
-        if backend not in allowed_backends:
-            raise ValueError(
-                f'"{backend}" is not a supported backend. '
-                f"Use one of {allowed_backends}."
-            )
-        else:
-            self.backend = backend
-
-        supported = ["kmeans", "gmm", "minibatchkmeans", "hierarchical"]
-        class_methods = ["from_centers", "from_data"]
-        if method not in supported and method not in class_methods:
-            raise ValueError(
-                f"'{method}' is not a supported method. "
-                f"Only {supported} are supported now."
-            )
-        else:
-            self.method = method
-
-        if self.k_range is None and self.method != "hierarchical":
-            raise ValueError(f"'k_range' is mandatory for '{self.method}' method.")
-
-        if (
-            (self.backend == "cuML" and self.method != "kmeans")
-            or (self.backend == "scipy" and self.method != "hierarchical")
-            or (self.backend == "sklearn" and self.method == "hierarchical")
-        ):
-            raise ValueError(
-                f"'{self.method}' method is not implemented "
-                f"for '{self.backend}' backend. Use supported combination."
-            )
-
-        self.engine_kwargs = kwargs
+        self.backend = backend
+        self.method = method
         self.verbose = verbose
-        self.link_pca = defaultdict(dict)
-
-        if self.backend in ["sklearn", "scipy"]:
-            self.plot_data = pd.DataFrame()
-            self.plot_data_pca = defaultdict(pd.DataFrame)
-
-        else:
-            try:
-                import cudf
-            except (ImportError, ModuleNotFoundError) as e:
-                raise ImportError(
-                    "cuML, cuDF and cupy packages are required to use `cuML` backend."
-                ) from e
-
-            self.plot_data = cudf.DataFrame()
-            self.plot_data_pca = defaultdict(cudf.DataFrame)
-
+        self.kwargs = kwargs
         self._n_pca = 0
+        self._link_pca = defaultdict(dict)
 
     def __repr__(self):
         return (
             f"Clustergram(k_range={self.k_range}, backend='{self.backend}', "
-            f"method='{self.method}', kwargs={self.engine_kwargs})"
+            f"method='{self.method}', kwargs={self.kwargs})"
         )
 
     def fit(self, data, **kwargs):
@@ -206,17 +150,67 @@ class Clustergram:
         >>> c_gram.fit(data)
 
         """
+        allowed_backends = ["sklearn", "cuML", "scipy", None]
+        if self.backend not in allowed_backends:
+            raise ValueError(
+                f'"{self.backend}" is not a supported backend. '
+                f"Use one of {allowed_backends}."
+            )
+
+        if self.backend is None:
+            self._backend = "scipy" if self.method == "hierarchical" else "sklearn"
+        else:
+            self._backend = self.backend
+
+        if self.k_range is None and self.method != "hierarchical":
+            raise ValueError(f"'k_range' is mandatory for '{self.method}' method.")
+
+        if (
+            (self._backend == "cuML" and self.method != "kmeans")
+            or (self._backend == "scipy" and self.method != "hierarchical")
+            or (self._backend == "sklearn" and self.method == "hierarchical")
+        ):
+            raise ValueError(
+                f"'{self.method}' method is not implemented "
+                f"for '{self._backend}' backend. Use supported combination."
+            )
+
+        supported = ["kmeans", "gmm", "minibatchkmeans", "hierarchical"]
+        class_methods = ["from_centers", "from_data"]
+        if self.method not in supported and self.method not in class_methods:
+            raise ValueError(
+                f"'{self.method}' is not a supported method. "
+                f"Only {supported} are supported now."
+            )
+
+        self.store_bic = self.kwargs.get("bic", False)
+
+        if self._backend in ["sklearn", "scipy"]:
+            self.plot_data = pd.DataFrame()
+            self.plot_data_pca = defaultdict(pd.DataFrame)
+
+        else:
+            try:
+                import cudf
+            except (ImportError, ModuleNotFoundError) as e:
+                raise ImportError(
+                    "cuML, cuDF and cupy packages are required to use `cuML` backend."
+                ) from e
+
+            self.plot_data = cudf.DataFrame()
+            self.plot_data_pca = defaultdict(cudf.DataFrame)
+
         self.data = data
-        if self.backend == "sklearn":
+        if self._backend == "sklearn":
             if self.method == "kmeans":
                 self._kmeans_sklearn(data, minibatch=False, **kwargs)
             elif self.method == "minibatchkmeans":
                 self._kmeans_sklearn(data, minibatch=True, **kwargs)
             elif self.method == "gmm":
                 self._gmm_sklearn(data, **kwargs)
-        if self.backend == "cuML":
+        if self._backend == "cuML":
             self._kmeans_cuml(data, **kwargs)
-        if self.backend == "scipy":
+        if self._backend == "scipy":
             self._scipy_hierarchical(data, **kwargs)
 
     def _kmeans_sklearn(self, data, minibatch, **kwargs):
@@ -244,9 +238,9 @@ class Clustergram:
 
             s = time()
             results = (
-                MiniBatchKMeans(n_clusters=n, **self.engine_kwargs).fit(data, **kwargs)
+                MiniBatchKMeans(n_clusters=n, **self.kwargs).fit(data, **kwargs)
                 if minibatch
-                else KMeans(n_clusters=n, **self.engine_kwargs).fit(data, **kwargs)
+                else KMeans(n_clusters=n, **self.kwargs).fit(data, **kwargs)
             )
 
             self.labels[n] = results.labels_
@@ -285,7 +279,7 @@ class Clustergram:
                 continue
 
             s = time()
-            results = KMeans(n_clusters=n, **self.engine_kwargs).fit(data, **kwargs)
+            results = KMeans(n_clusters=n, **self.kwargs).fit(data, **kwargs)
             self.labels[n] = results.labels_
             self.cluster_centers[n] = results.cluster_centers_
 
@@ -313,7 +307,9 @@ class Clustergram:
 
         for n in self.k_range:
             s = time()
-            results = GaussianMixture(n_components=n, **self.engine_kwargs).fit(
+            clean_kwargs = self.kwargs.copy()
+            clean_kwargs.pop("bic")
+            results = GaussianMixture(n_components=n, **clean_kwargs).fit(
                 data, **kwargs
             )
             centers = np.empty(shape=(results.n_components, data.shape[1]))
@@ -340,8 +336,8 @@ class Clustergram:
         except ImportError as e:
             raise ImportError("scipy is required to use `scipy` backend.") from e
 
-        method = self.engine_kwargs.pop("linkage", "single")
-        self.linkage = hierarchy.linkage(data, method=method, **self.engine_kwargs)
+        method = self.kwargs.pop("linkage", "single")
+        self.linkage = hierarchy.linkage(data, method=method, **self.kwargs)
         rootnode, nodelist = hierarchy.to_tree(self.linkage, rd=True)
         distances = [node.dist for node in nodelist if node.dist > 0][::-1]
 
@@ -418,7 +414,9 @@ class Clustergram:
 
         cgram.cluster_centers = cluster_centers
         cgram.labels = labels
-        cgram.backend = "sklearn"
+        cgram._backend = "sklearn"
+        cgram.plot_data = pd.DataFrame()
+        cgram.plot_data_pca = defaultdict(pd.DataFrame)
 
         if data is not None:
             cgram.data = data
@@ -492,7 +490,9 @@ class Clustergram:
                 )
 
         cgram.labels = labels
-        cgram.backend = "sklearn"
+        cgram._backend = "sklearn"
+        cgram.plot_data = pd.DataFrame()
+        cgram.plot_data_pca = defaultdict(pd.DataFrame)
 
         return cgram
 
@@ -549,7 +549,7 @@ class Clustergram:
 
         self.silhouette = pd.Series(name="silhouette_score", dtype="float64")
 
-        if self.backend in ["sklearn", "scipy"]:
+        if self._backend in ["sklearn", "scipy"]:
             for k in self.k_range:
                 if k > 1:
                     self.silhouette.loc[k] = metrics.silhouette_score(
@@ -620,7 +620,7 @@ class Clustergram:
             name="calinski_harabasz_score", dtype="float64"
         )
 
-        if self.backend in ["sklearn", "scipy"]:
+        if self._backend in ["sklearn", "scipy"]:
             for k in self.k_range:
                 if k > 1:
                     self.calinski_harabasz.loc[k] = metrics.calinski_harabasz_score(
@@ -687,7 +687,7 @@ class Clustergram:
 
         self.davies_bouldin = pd.Series(name="davies_bouldin_score", dtype="float64")
 
-        if self.backend in ["sklearn", "scipy"]:
+        if self._backend in ["sklearn", "scipy"]:
             for k in self.k_range:
                 if k > 1:
                     self.davies_bouldin.loc[k] = metrics.davies_bouldin_score(
@@ -721,7 +721,7 @@ class Clustergram:
             for n in self.k_range:
                 means = self.cluster_centers[n].dot(self.pca.components_[n_pca - 1])
                 self.plot_data_pca[n_pca][n] = np.take(means, self.labels[n].values)
-                self.link_pca[n_pca][n] = dict(zip(means, range(n)))
+                self._link_pca[n_pca][n] = dict(zip(means, range(n)))
 
     def _compute_means_sklearn(self):
         """Compute cluster mean values using sklearn backend."""
@@ -755,7 +755,7 @@ class Clustergram:
                 self.plot_data_pca[n_pca][n] = cp.take(
                     means, self.labels[n].values.get()
                 )
-                self.link_pca[n_pca][n] = dict(zip(means.tolist(), range(n)))
+                self._link_pca[n_pca][n] = dict(zip(means.tolist(), range(n)))
 
     def _compute_means_cuml(self):
         """Compute cluster mean values using cuML backend."""
@@ -774,13 +774,13 @@ class Clustergram:
 
     def _compute_means(self, pca_weighted, pca_kwargs):
         if pca_weighted:
-            if self.backend in ["sklearn", "scipy"]:
+            if self._backend in ["sklearn", "scipy"]:
                 self._compute_pca_means_sklearn(**pca_kwargs)
             else:
                 self._compute_pca_means_cuml(**pca_kwargs)
         else:
             if self.plot_data.empty:
-                if self.backend in ["sklearn", "scipy"]:
+                if self._backend in ["sklearn", "scipy"]:
                     self._compute_means_sklearn()
                 else:
                     self._compute_means_cuml()
@@ -888,7 +888,7 @@ class Clustergram:
         for i in k_range:
             cl = means[i].value_counts()
 
-            if self.backend in ["sklearn", "scipy"]:
+            if self._backend in ["sklearn", "scipy"]:
                 ax.scatter(
                     [i] * i,
                     [cl.index],
@@ -914,7 +914,7 @@ class Clustergram:
             with contextlib.suppress(KeyError, ValueError):
                 sub = (
                     means.groupby([i, i + 1]).count().reset_index()
-                    if self.backend in ["sklearn", "scipy"]
+                    if self._backend in ["sklearn", "scipy"]
                     else means.groupby([i, i + 1]).count().reset_index().to_pandas()
                 )
                 for r in sub.itertuples():
@@ -1022,7 +1022,7 @@ class Clustergram:
 
         if pca_weighted:
             means = self.plot_data_pca[pca_component]
-            links = self.link_pca[pca_component]
+            links = self._link_pca[pca_component]
             ylabel = "PCA weighted mean of the clusters"
         else:
             means = self.plot_data
@@ -1087,7 +1087,7 @@ class Clustergram:
         for i in self.k_range:
             if i < stop:
                 sub = means.groupby([i, i + 1]).count().reset_index()
-                if self.backend == "cuML":
+                if self._backend == "cuML":
                     sub = sub.to_pandas()
                 for r in sub.itertuples():
                     fig.line(

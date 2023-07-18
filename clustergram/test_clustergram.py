@@ -1,12 +1,12 @@
-from distutils.version import Version
+import bokeh
 import numpy as np
 import pandas as pd
 import pytest
+import sklearn
 from bokeh.embed import json_item
+from packaging.version import Version
 from pandas.testing import assert_series_equal
 from sklearn.datasets import make_blobs
-import sklearn
-from packaging.version import Version
 
 try:
     import cudf
@@ -20,6 +20,7 @@ except (ImportError, ModuleNotFoundError):
 from clustergram import Clustergram
 
 SKLEARN_GE_130 = Version(sklearn.__version__) >= Version("1.3.0")
+BOKEH_GE_300 = Version(bokeh.__version__) >= Version("3.0.0")
 
 n_samples = 100
 n_features = 2
@@ -61,7 +62,7 @@ def test_sklearn_kmeans():
         for x in range(1, 8)
     ]
 
-    ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
+    ax = clustergram.plot(pca_kwargs={"random_state": random_state})
     assert len(ax.get_children()) == 46
 
     assert clustergram.plot_data.empty
@@ -115,7 +116,7 @@ def test_sklearn_minibatchkmeans():
         for x in range(1, 8)
     ]
 
-    ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
+    ax = clustergram.plot(pca_kwargs={"random_state": random_state})
     assert len(ax.get_children()) == 46 if SKLEARN_GE_130 else 45
 
     assert clustergram.plot_data.empty
@@ -166,7 +167,7 @@ def test_sklearn_gmm():
         for x in range(1, 8)
     ]
 
-    ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
+    ax = clustergram.plot(pca_kwargs={"random_state": random_state})
     assert len(ax.get_children()) == 44
 
     assert clustergram.plot_data.empty
@@ -274,7 +275,7 @@ def test_cuml_kmeans():
         for x in range(1, 8)
     ]
 
-    ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
+    ax = clustergram.plot(pca_kwargs={"random_state": random_state})
     assert len(ax.get_children()) == 44
 
     assert clustergram.plot_data.empty
@@ -313,7 +314,7 @@ def test_cuml_kmeans():
         for x in range(1, 8)
     ]
 
-    ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
+    ax = clustergram.plot(pca_kwargs={"random_state": random_state})
     assert len(ax.get_children()) == 44
 
     assert clustergram.plot_data.empty
@@ -351,7 +352,7 @@ def test_hierarchical():
         for x in range(1, 8)
     ]
 
-    ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
+    ax = clustergram.plot(pca_kwargs={"random_state": random_state})
     assert len(ax.get_children()) == 44
 
     assert clustergram.plot_data.empty
@@ -684,7 +685,7 @@ def test_from_data_mean():
     labels = pd.DataFrame({1: [0, 0, 0], 2: [0, 0, 1], 3: [0, 2, 1]})
     clustergram = Clustergram.from_data(data, labels)
 
-    ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
+    ax = clustergram.plot(pca_kwargs={"random_state": random_state})
     assert len(ax.get_children()) == 18
 
     assert clustergram.plot_data.empty
@@ -704,7 +705,7 @@ def test_from_data_median():
     labels = pd.DataFrame({1: [0, 0, 0], 2: [0, 0, 1], 3: [0, 2, 1]})
     clustergram = Clustergram.from_data(data, labels, method="median")
 
-    ax = clustergram.plot(pca_kwargs=dict(random_state=random_state))
+    ax = clustergram.plot(pca_kwargs={"random_state": random_state})
     assert len(ax.get_children()) == 18
 
     assert clustergram.plot_data.empty
@@ -789,7 +790,7 @@ def test_bokeh():
     clustergram = Clustergram(range(1, 8), backend="sklearn", random_state=random_state)
     clustergram.fit(data)
 
-    f = clustergram.bokeh(pca_kwargs=dict(random_state=random_state))
+    f = clustergram.bokeh(pca_kwargs={"random_state": random_state})
     out = str(json_item(f, "clustergram"))
 
     assert out.count("data") == 60
@@ -896,3 +897,32 @@ def test_custom_pca_cuml():
     assert clustergram.plot_data_pca[3].mean().mean() == pytest.approx(
         -0.7938977877582821, rel=1e-4
     )
+
+
+def test_plot_integer_ticks():
+    device_data, device_labels = make_blobs(
+        n_samples=n_samples,
+        n_features=n_features,
+        centers=n_clusters,
+        random_state=random_state,
+        cluster_std=0.1,
+    )
+    clustergram = Clustergram(
+        range(1, 5),
+        random_state=random_state,
+    )
+    clustergram.fit(device_data)
+    ax = clustergram.plot()
+    assert [item.get_text() for item in ax.get_xticklabels()] == [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+    ]
+
+    if BOKEH_GE_300:
+        f = clustergram.bokeh(pca_kwargs={"random_state": random_state})
+        out = str(json_item(f, "clustergram"))
+        assert "'name': 'SingleIntervalTicker'" in out

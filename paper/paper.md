@@ -18,12 +18,14 @@ bibliography: paper.bib
 
 # Summary
 
-Given a heterogeneous group of observations, research often tries to find more
+Given a heterogeneous group of observations, researchers often try to find more
 homogenous groups within them. Typical is the use of clustering algorithms determining
 these groups based on statistical similarity. While there is an extensive range of
 algorithms to be chosen from, they often share one specific limitation - the algorithm
 itself will not determine the optimal number of clusters a group of observations shall
-be divided into. This paper presents a Python package named `clustergram` providing
+be divided into. The solution is usually depending on internal cluster validity measures,
+but those provide only limited insight and can result in a suboptimal choice
+[@GAGOLEWSKI2021620]. This paper presents a Python package named `clustergram` offering
 tools to analyze the clustering solutions and visualize the behavior of observations in
 relation to a tested range of options for the number of classes, enabling a deeper
 understanding of the behavior of observations splitting into classes and better-informed
@@ -33,11 +35,13 @@ The situation the package is dealing with can be illustrated on one of the most 
 used clustering algorithms, K-Means. The algorithm first sets a pre-defined number of
 random seeds and attempts to split the data into the same number of classes, searching
 for the optimal seed locations providing the best split between the groups. However, the
-number of seed locations needs to be defined by a researcher and is usually unknown. The
+number of classes needs to be defined by a researcher and is usually unknown. The
 clustering solution is therefore created for a range of viable solutions (usually from 2
 to N) that are compared and assessed based on various criteria, be it a so-called
 _"elbow plot"_ of silhouette score looking for the "elbow" on a curve or a related
-silhouette analysis, or using other evaluation metrics. Most of them have in common that
+silhouette analysis, or using other evaluation metrics, with both former and latter
+options often resulting in partitions that may not be relevant [@GAGOLEWSKI2021620].
+Most of them have in common that
 they treat each clustering option separately, without a relation between, e.g., when
 testing 3 and 4 clusters, the behavior of observations between these two options is not
 considered. To alleviate the situation and shed more light on the dynamics of
@@ -51,15 +55,15 @@ shifting between clusters, so we can see how large a portion of cluster A from a
 2-cluster solution goes to cluster B of a 3-cluster solution, for example. This
 visualization uncovers the hierarchical nature of range-based series of clustering
 solutions and enables researchers to determine the optimal number of classes based on
-the illustrated behavior of observations as shown in figures \autoref{fig:mean}, and
+the illustrated behavior of observations as shown in \autoref{fig:mean}, and
 \autoref{fig:pca} further explained below.
 
 The Python package presented in this paper provides tools to create and explore
 clustergrams in Python based on a number of built-in clustering algorithms but also on
 external input resulting from other algorithms. The API is organized around a single
 overarching `clustergram.Clustergram` class designed around scikit-learn's API style
-[@scikit-learn] with initialization of the class with the specification of arguments and
-the `fit` method, making it familiar to existing users of scikit-learn and
+[@sklearn_api] with initialization of the class with the specification of arguments and
+the `fit` method, making it familiar to existing users of scikit-learn [@scikit-learn] and
 similarly-designed packages. In its core, the class expects a selection of a range of
 solutions to be tested (`k_range`) from 1 to N, a selection of clustering algorithm
 (`method`) and a specification of a backend used for computation. Here, `clustergram`
@@ -81,13 +85,13 @@ centroids are showing the non-weighted mean values as proposed in the original p
 
 Once the series of cluster solutions is generated, it is time to compute and generate
 clustergram diagrams for plotting functionality. The package offers two different ways
-of computing clustergram values. The first case shown in figure \autoref{fig:mean}
+of computing clustergram values. The first case shown in \autoref{fig:mean}
 follows the original proposal by @schonlau2002clustergram and uses the means of cluster
-centroids (i.e. a mean of means of features) to plot on Y-axis. However, as later noted
-by @2010Clustergram, that does not necessarily provide the best overview of the
-behavior. Therefore, there is another (default) option weighted the means of cluster
-centroids by the first principal component derived from the complete dataset, shown in
-figure \autoref{fig:pca} based on the same set of clustering solutions. Moreover,
+centroids to plot on Y-axis. However, as later noted
+by @2010Clustergram, using simple means does not necessarily result in the most readable
+clustergram. Therefore, the default option is to use the means of cluster
+centroids weighted by the first principal component derived from the complete dataset, shown in
+\autoref{fig:pca} based on the same set of clustering solutions. Moreover,
 weighting by any other principal component is also available if a researcher needs
 further exploration. Due to the potential high computation cost of principal components
 and weighted cluster centroids, all the values are cached once computed, meaning that
@@ -110,7 +114,8 @@ Since the selection of an optimal number of classes is a non-trivial exercise an
 not, in the ideal case, be left to a single method or metric, `clustergram` natively
 allows computation of additional metrics of cluster fit (Silhouette score,
 Calinski-Harabasz score, Davies-Bouldin score) directly from the main class using the
-implementation available in the `scikit-learn`.
+implementation available in the `scikit-learn`, while the direct access to the labels
+resulting from all clustering options allows easy computation of any other similar metric.
 
 # Statement of need
 
@@ -119,13 +124,13 @@ methods beyond the elbow plot and other traditionally used ways. It is clearly i
 by the constant citation level of the original set of papers by Schonlau
 [@schonlau2002clustergram; @schonlau2004Visualizing]. Arguably, this has been limited by
 the lack of ready-to-use implementation of the technique in the modern data science
-pipelines as the @schonlau2002clustergram's code has been written in 2002 for STATA and
-the only other version has been explored in a blog post by @2010Clustergram
-experimenting with the minimal (as well as unpackaged and unmaintained) R
-implementation. Since the first release of `clustergram` in November 2020 (and
-publishing a blog post in April 2021), the package has been used in at least seven
-academic publications, ranging from the classification of geographical areas based on
-form and function [@arribas-bel2022Spatiala; @fleischmann2022Geographicala;
+pipelines as the @schonlau2002clustergram's code has been written in 2002 for STATA.
+Another implementation has been explored in a blog post by @2010Clustergram
+experimenting with the minimal (as well as unpackaged and unmaintained) R version, that
+was later incorporated in the EcotoneFinder package [@ecotone]. Since the first release
+of `clustergram` in November 2020, the package has been used in at least seven academic
+publications, ranging from the classification of geographical areas based on form and
+function [@arribas-bel2022Spatiala; @fleischmann2022Geographicala;
 @samardzhiev2022Functionala], geodemographics [@yang2022Ageing], clustering of the
 latent representation from convolutional neural networks [@singleton2022Estimatinga],
 classification of high Arctic lakes [@urbanski2022Monitoring] to facility reliability

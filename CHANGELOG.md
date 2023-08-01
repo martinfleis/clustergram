@@ -1,5 +1,18 @@
 # Changelog
 
+## Version 0.8.0 (August 1, 2023)
+
+__API changes__:
+
+- The first argument in ``Clustergram.fit()`` is now ``X`` instead of ``data``.
+
+__Enhancements__:
+
+- API: follow scikit-learn API conventions (#59)
+- ENH: ensure that x ticks are only integers (#58)
+- ENH: format time in verbose mode
+
+
 ## Version 0.7.0 (January 15, 2023)
 
 __Enhancements__:

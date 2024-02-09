@@ -40,7 +40,9 @@ data = pd.DataFrame(device_data)
 
 
 def test_sklearn_kmeans():
-    clustergram = Clustergram(range(1, 8), backend="sklearn", random_state=random_state)
+    clustergram = Clustergram(
+        range(1, 8), backend="sklearn", random_state=random_state, n_init=10
+    )
     cgram = clustergram.fit(data)
     assert isinstance(cgram, Clustergram)
 
@@ -87,6 +89,7 @@ def test_sklearn_minibatchkmeans():
         backend="sklearn",
         method="minibatchkmeans",
         random_state=random_state,
+        n_init=3,
     )
     clustergram.fit(data)
 
@@ -416,7 +419,9 @@ def test_repr():
 
 
 def test_silhouette_score():
-    clustergram = Clustergram(range(1, 8), backend="sklearn", random_state=random_state)
+    clustergram = Clustergram(
+        range(1, 8), backend="sklearn", random_state=random_state, n_init=10
+    )
     clustergram.fit(data)
 
     pd.testing.assert_series_equal(
@@ -503,7 +508,9 @@ def test_silhouette_score_cuml():
 
 
 def test_calinski_harabasz_score():
-    clustergram = Clustergram(range(1, 8), backend="sklearn", random_state=random_state)
+    clustergram = Clustergram(
+        range(1, 8), backend="sklearn", random_state=random_state, n_init=10
+    )
     clustergram.fit(data)
 
     pd.testing.assert_series_equal(
@@ -602,7 +609,9 @@ def test_calinski_harabasz_score_cuml():
 
 
 def test_davies_bouldin_score():
-    clustergram = Clustergram(range(1, 8), backend="sklearn", random_state=random_state)
+    clustergram = Clustergram(
+        range(1, 8), backend="sklearn", random_state=random_state, n_init=10
+    )
     clustergram.fit(data)
 
     pd.testing.assert_series_equal(
@@ -807,7 +816,9 @@ def test_from_centers_data():
 
 
 def test_bokeh():
-    clustergram = Clustergram(range(1, 8), backend="sklearn", random_state=random_state)
+    clustergram = Clustergram(
+        range(1, 8), backend="sklearn", random_state=random_state, n_init=10
+    )
     clustergram.fit(data)
 
     f = clustergram.bokeh(pca_kwargs={"random_state": random_state})
@@ -850,7 +861,9 @@ def test_bokeh_cuml():
 
     data = cudf.DataFrame(device_data)
 
-    clustergram = Clustergram(range(1, 8), backend="cuML", random_state=random_state)
+    clustergram = Clustergram(
+        range(1, 8), backend="cuML", random_state=random_state, n_init=10
+    )
     clustergram.fit(data)
 
     f = clustergram.bokeh()

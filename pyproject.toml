@@ -41,7 +41,9 @@ omit = ["clustergram/test_clustergram.py"]
 
 [tool.ruff]
 line-length = 88
-select = ["E", "F", "W", "I", "UP", "N", "B", "A", "C4", "SIM", "ARG"]
 exclude = ["doc"]
-target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "N", "B", "A", "C4", "SIM", "ARG"]
 ignore = ["B006"]
+

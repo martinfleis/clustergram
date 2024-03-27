@@ -1136,7 +1136,7 @@ class Clustergram:
                         **line_style,
                     )
 
-        circle = fig.circle(
+        circle = fig.scatter(
             "x",
             "y",
             size="size",

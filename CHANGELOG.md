@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.8.1 (March 27, 2024)
+
+- Minor compatibility update for Bokeh plotting.
+
 ## Version 0.8.0 (August 1, 2023)
 
 __API changes__:

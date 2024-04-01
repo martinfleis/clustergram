@@ -1,4 +1,5 @@
 """Clustergam initialisation. Imports main class and dunders."""
+
 import contextlib
 from importlib.metadata import PackageNotFoundError, version
 

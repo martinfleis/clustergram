@@ -13,7 +13,6 @@ import pandas as pd
 
 
 class Clustergram:
-
     """Clustergram class mimicking the interface of clustering class (e.g. ``KMeans``).
 
     Clustergram is a graph used to examine how cluster members are assigned to clusters

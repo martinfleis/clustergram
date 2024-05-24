@@ -131,7 +131,7 @@ def test_sklearn_minibatchkmeans():
     assert len(ax.get_children()) == 46 if SKLEARN_GE_130 else 45
 
     assert abs(clustergram.plot_data_pca[1].mean().mean()) == pytest.approx(
-        2.0974466923993482 if SKLEARN_GE_130 else -2.153978086091386, rel=1e-4
+        2.0974466923993482 if SKLEARN_GE_130 else 2.153978086091386, rel=1e-4
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
         1.4441508195691932 if SKLEARN_GE_130 else 1.477158426841248, rel=1e-4
@@ -185,7 +185,7 @@ def test_sklearn_gmm():
     assert len(ax.get_children()) == 44
 
     assert abs(clustergram.plot_data_pca[1].mean().mean()) == pytest.approx(
-        2.153817166750229 if SKLEARN_GE_130 else -1.9629843968429452, rel=1e-4
+        2.153817166750229 if SKLEARN_GE_130 else 1.9629843968429452, rel=1e-4
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
         1.4636749962003583 if SKLEARN_GE_130 else 1.3321040444661392, rel=1e-4

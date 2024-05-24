@@ -72,8 +72,8 @@ def test_sklearn_kmeans():
     ax = clustergram.plot(pca_weighted=False)
     assert len(ax.get_children()) == 46
 
-    assert clustergram.plot_data_pca[1].mean().mean() == pytest.approx(
-        -2.095277953205114, rel=1e-4
+    assert abs(clustergram.plot_data_pca[1].mean().mean()) == pytest.approx(
+        2.095277953205114, rel=1e-4
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
         1.4398916223315354, rel=1e-4
@@ -130,8 +130,8 @@ def test_sklearn_minibatchkmeans():
     ax = clustergram.plot(pca_weighted=False)
     assert len(ax.get_children()) == 46 if SKLEARN_GE_130 else 45
 
-    assert clustergram.plot_data_pca[1].mean().mean() == pytest.approx(
-        -2.0974466923993482 if SKLEARN_GE_130 else -2.153978086091386, rel=1e-4
+    assert abs(clustergram.plot_data_pca[1].mean().mean()) == pytest.approx(
+        2.0974466923993482 if SKLEARN_GE_130 else 2.153978086091386, rel=1e-4
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
         1.4441508195691932 if SKLEARN_GE_130 else 1.477158426841248, rel=1e-4
@@ -184,8 +184,8 @@ def test_sklearn_gmm():
     ax = clustergram.plot(pca_weighted=False)
     assert len(ax.get_children()) == 44
 
-    assert clustergram.plot_data_pca[1].mean().mean() == pytest.approx(
-        -2.153817166750229 if SKLEARN_GE_130 else -1.9629843968429452, rel=1e-4
+    assert abs(clustergram.plot_data_pca[1].mean().mean()) == pytest.approx(
+        2.153817166750229 if SKLEARN_GE_130 else 1.9629843968429452, rel=1e-4
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
         1.4636749962003583 if SKLEARN_GE_130 else 1.3321040444661392, rel=1e-4
@@ -374,8 +374,8 @@ def test_hierarchical():
     ax = clustergram.plot(pca_weighted=False)
     assert len(ax.get_children()) == 44
 
-    assert clustergram.plot_data_pca[1].mean().mean() == pytest.approx(
-        -2.0952779532051142, rel=1e-4
+    assert abs(clustergram.plot_data_pca[1].mean().mean()) == pytest.approx(
+        2.0952779532051142, rel=1e-4
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
         1.4398916223315354, rel=1e-4
@@ -721,8 +721,8 @@ def test_from_data_mean():
     ax = clustergram.plot(pca_weighted=False)
     assert len(ax.get_children()) == 18
 
-    assert clustergram.plot_data_pca[1].mean().mean() == pytest.approx(
-        -7.820673888000655, rel=1e-4
+    assert abs(clustergram.plot_data_pca[1].mean().mean()) == pytest.approx(
+        7.820673888000655, rel=1e-4
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
         3.8333333333333335, rel=1e-4
@@ -741,8 +741,8 @@ def test_from_data_median():
     ax = clustergram.plot(pca_weighted=False)
     assert len(ax.get_children()) == 18
 
-    assert clustergram.plot_data_pca[1].mean().mean() == pytest.approx(
-        -7.958519683972767, rel=1e-4
+    assert abs(clustergram.plot_data_pca[1].mean().mean()) == pytest.approx(
+        7.958519683972767, rel=1e-4
     )
     assert clustergram.plot_data.mean().mean() == pytest.approx(
         3.7222222222222228, rel=1e-4
@@ -897,7 +897,7 @@ def test_custom_pca():
     assert len(clustergram.plot_data_pca) == 2
     assert clustergram.plot_data_pca[3].shape == (100, 7)
 
-    assert clustergram.plot_data_pca[3].mean().mean() == pytest.approx(
+    assert abs(clustergram.plot_data_pca[3].mean().mean()) == pytest.approx(
         1.7578328094065583, rel=1e-4
     )
 

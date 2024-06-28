@@ -40,6 +40,6 @@ jobs:
           pytest -v --color=yes --cov-config .coveragerc --cov=clustergram --cov-report term-missing --cov-report xml .
 
       - name: Run Ruff
-        run: ruff --output-format=github .
+        run: ruff check --output-format=github .
 
       - uses: codecov/codecov-action@v4

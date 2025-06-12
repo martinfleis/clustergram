@@ -946,11 +946,10 @@ class Clustergram:
             # linewidth in points * (1 inch / 72 points) * (dy / inch) = linewidth in dy
             # the scaling constant propagates through regardless
             linewidth_dy = (
-                linewidth * (1/72) * (axis_height_dy/axis_height_inches)
+                linewidth**2 * (1/72) * (axis_height_dy/axis_height_inches)
             )
             # and, because this stratification encodes things in terms of their *area*,
             # we should square the linewidth like matplotlib does with "s" in plt.scatter()
-            linewidth_dy = linewidth_dy**2
 
         for i in k_range:
             if stratify_by_k is not None:
@@ -1045,8 +1044,8 @@ class Clustergram:
                         # started/ended. For the head, this resets
                         # the lower-left of the parallelogram; for
                         # the tail, this is the lower right of the parallelogram
-                        head_width = linewidth_dy * (count_head / len(means))
-                        tail_width = linewidth_dy * (count_tail / len(means))
+                        head_width = (linewidth_dy * (count_head / len(means)))
+                        tail_width = (linewidth_dy * (count_tail / len(means)))
                         if y_head != last_head:
                             head_offset = head_width / 2
                         if y_tail != last_tail:

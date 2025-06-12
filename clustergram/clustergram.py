@@ -951,7 +951,6 @@ class Clustergram:
             # and, because this stratification encodes things in terms of their *area*,
             # we should square the linewidth like matplotlib does with "s" in plt.scatter()
             linewidth_dy = linewidth_dy**2
-        else:
 
         for i in k_range:
             if stratify_by_k is not None:
@@ -1066,7 +1065,8 @@ class Clustergram:
                             [lower_left, lower_right],
                             [upper_left, upper_right],
                             color=l_ci,
-
+                            edgecolor='none',
+                            linewidth=0
                         )
                         # since offset is subtracted, we need to move "up" by
                         # decrementing the offset

@@ -7,7 +7,6 @@ Original idea is by Matthias Schonlau - http://www.schonlau.net/clustergram.html
 import contextlib
 from collections import defaultdict
 from time import time
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -952,9 +951,7 @@ class Clustergram:
             # and, because this stratification encodes things in terms of their *area*,
             # we should square the linewidth like matplotlib does with "s" in plt.scatter()
             linewidth_dy = linewidth_dy**2
-            node_minmax = means[stratify_by_k].min(), means[stratify_by_k].max()
         else:
-            node_minmax = means.min().min(), means.max().max()
 
         for i in k_range:
             if stratify_by_k is not None:
@@ -1029,7 +1026,7 @@ class Clustergram:
                 last_head = last_tail = np.nan
                 head_offset = tail_offset = 0
                 for r in sub.itertuples():
-                    ix, y_head, y_tail, *rest, count_tail = r
+                    _, y_head, y_tail, *rest, count_tail = r
                     if stratify_by_k is None:
                         ax.plot(
                             [i, i + 1],

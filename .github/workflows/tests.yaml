@@ -24,10 +24,10 @@ jobs:
         shell: bash -l {0}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup micromamba
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: ${{ matrix.environment-file }}
           micromamba-version: "latest"
@@ -42,4 +42,4 @@ jobs:
       - name: Run Ruff
         run: ruff check --output-format=github .
 
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5

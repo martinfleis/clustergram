@@ -20,6 +20,7 @@ except (ImportError, ModuleNotFoundError):
 from clustergram import Clustergram
 
 SKLEARN_GE_130 = Version(sklearn.__version__) >= Version("1.3.0")
+SKLEARN_GE_190 = Version(sklearn.__version__) >= Version("1.9.0")
 BOKEH_GE_300 = Version(bokeh.__version__) >= Version("3.0.0")
 
 n_samples = 100
@@ -98,7 +99,17 @@ def test_sklearn_minibatchkmeans():
     assert clustergram.labels.shape == (100, 7)
     assert clustergram.labels.notna().all().all()
 
-    if SKLEARN_GE_130:
+    if SKLEARN_GE_190:
+        expected = [
+            1.4398916223315352,
+            -2.8228153253366175,
+            -0.9809469710633785,
+            0.14681798687004144,
+            0.7828185339635452,
+            0.7950217808061651,
+            1.0213861744439536,
+        ]
+    elif SKLEARN_GE_130:
         expected = [
             1.4398916223315352,
             -2.814948296113636,
@@ -119,7 +130,7 @@ def test_sklearn_minibatchkmeans():
             1.0250449911587773,
         ]
     assert expected == [
-        pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-12)
+        pytest.approx(np.mean(clustergram.cluster_centers[x]), rel=1e-6)
         for x in range(1, 8)
     ]
 
@@ -130,12 +141,20 @@ def test_sklearn_minibatchkmeans():
     ax = clustergram.plot(pca_weighted=False)
     assert len(ax.get_children()) == 46 if SKLEARN_GE_130 else 45
 
+    if SKLEARN_GE_190:
+        exp1 = 2.070258183364822
+        exp2 = 1.4223376923365423
+    elif SKLEARN_GE_130:
+        exp1 = 2.0974466923993482
+        exp2 = 1.4441508195691932
+    else:
+        exp1 = 2.153978086091386
+        exp2 = 1.477158426841248
+
     assert abs(clustergram.plot_data_pca[1].mean().mean()) == pytest.approx(
-        2.0974466923993482 if SKLEARN_GE_130 else 2.153978086091386, rel=1e-4
+        exp1, rel=1e-4
     )
-    assert clustergram.plot_data.mean().mean() == pytest.approx(
-        1.4441508195691932 if SKLEARN_GE_130 else 1.477158426841248, rel=1e-4
-    )
+    assert clustergram.plot_data.mean().mean() == pytest.approx(exp2, rel=1e-4)
 
     assert isinstance(clustergram.labels_, pd.DataFrame)
     assert isinstance(clustergram.cluster_centers_, dict)

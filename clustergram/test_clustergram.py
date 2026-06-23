@@ -1,4 +1,5 @@
 import bokeh
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
@@ -38,6 +39,12 @@ device_data, device_labels = make_blobs(
 )
 
 data = pd.DataFrame(device_data)
+
+
+@pytest.fixture(autouse=True)
+def close_figures():
+    yield
+    plt.close("all")
 
 
 def test_sklearn_kmeans():

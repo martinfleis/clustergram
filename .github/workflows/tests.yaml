@@ -37,7 +37,7 @@ jobs:
 
       - name: Test clustergram
         run: |
-          pytest -v --color=yes --cov-config .coveragerc --cov=clustergram --cov-report term-missing --cov-report xml .
+          pytest -v -r a --color=yes --cov-config .coveragerc --cov=clustergram --cov-report term-missing --cov-report xml .
 
       - name: Run Ruff
         run: ruff check --output-format=github .

@@ -823,6 +823,8 @@ class Clustergram:
         line_style=None,
         figsize=None,
         k_range=None,
+        cmap=None,
+        stratify_by_k=None,
         pca_weighted=True,
         pca_kwargs={},
         pca_component=1,
@@ -898,27 +900,78 @@ class Clustergram:
         cl_ec = cluster_style.pop("edgecolor", "w")
         cl_lw = cluster_style.pop("linewidth", 2)
         cl_zorder = cluster_style.pop("zorder", 2)
+        cluster_cmap = cluster_style.pop("cmap", cmap)
 
         if line_style is None:
             line_style = {}
         l_c = line_style.pop("color", "k")
         l_zorder = line_style.pop("zorder", 1)
         solid_capstyle = line_style.pop("solid_capstyle", "butt")
+        line_cmap = line_style.pop("cmap", cmap)
 
         if k_range is None:
             k_range = self.k_range
 
         if pca_weighted:
-            means = self.plot_data_pca[pca_component]
+            means = self.plot_data_pca[pca_component].copy()
             ax.set_ylabel("PCA weighted mean of the clusters")
         else:
-            means = self.plot_data
+            means = self.plot_data.copy()
             ax.set_ylabel("Mean of the clusters")
+
         ax.set_xlabel("Number of clusters (k)")
 
-        for i in k_range:
-            cl = means[i].value_counts()
+        if line_cmap is not None:
+            line_cmap = plt.get_cmap(line_cmap)
+        if cluster_cmap is not None:
+            cluster_cmap=plt.get_cmap(cluster_cmap)
 
+        if stratify_by_k is not None:
+            means = means.assign(label_strata = self.labels_[stratify_by_k])
+
+            if line_cmap is None:
+                line_cmap = plt.get_cmap('cividis')
+            color_lut = {
+                ki:line_cmap(ki/(stratify_by_k-1)) for ki in range(stratify_by_k)
+            }
+
+            # calculate the scale factor for linewidths in the plot
+            # the user can specify "linewidth" to re-scale the size of the
+            # line. Linewidth is usually in points, but since the stratified
+            # plot uses `ax.fill_between()`, we need to convert the linewidth
+            # into space +/- the starting locations.
+            # figure height (inches) times axis height (in percent of figure)
+            axis_height_inches = ax.figure.bbox_inches.height * ax.get_position().height
+            axis_height_dy = means.max().max() - means.min().min()# this needs to come from means
+            # linewidth in points * (1 inch / 72 points) * (dy / inch) = linewidth in dy
+            # the scaling constant propagates through regardless
+            linewidth_dy = (
+                linewidth**2 * (1/72) * (axis_height_dy/axis_height_inches)
+            )
+            # and, because this stratification encodes things in terms of their *area*,
+            # we should square the linewidth like matplotlib does with "s" in plt.scatter()
+
+        for i in k_range:
+            if stratify_by_k is not None:
+                if i != stratify_by_k:
+                    weights = self.labels_.groupby([i,stratify_by_k]).count().iloc[:,0].to_frame("weight").reset_index()
+                    weights['colors'] = [np.asarray(color_lut.get(ki)) for ki in weights[stratify_by_k]]
+                    color_lut_by_label = weights.groupby(i).apply(
+                        lambda chunk: (chunk.colors * chunk.weight).sum(axis=0)/chunk.weight.sum()
+                    ).to_dict()
+                else:
+                    color_lut_by_label = color_lut
+                label_lut_by_loc = dict(pd.concat((
+                    means[i].rename("locs"), self.labels_[i].rename("labels")
+                    ), axis=1).value_counts().index)
+                cl = means[i].value_counts()
+                c = [
+                    color_lut_by_label[label_lut_by_loc[cli]] for cli in cl.index
+                ]
+                cl_c = None
+            else:
+                cl = means[i].value_counts()
+                c=None
             if self._backend in ["sklearn", "scipy"]:
                 ax.scatter(
                     [i] * i,
@@ -926,6 +979,7 @@ class Clustergram:
                     cl * ((500 / len(means)) * size),
                     zorder=cl_zorder,
                     color=cl_c,
+                    c=c,
                     edgecolor=cl_ec,
                     linewidth=cl_lw,
                     **cluster_style,
@@ -943,22 +997,82 @@ class Clustergram:
                 )
 
             with contextlib.suppress(KeyError, ValueError):
-                sub = (
-                    means.groupby([i, i + 1]).count().reset_index()
-                    if self._backend in ["sklearn", "scipy"]
-                    else means.groupby([i, i + 1]).count().reset_index().to_pandas()
-                )
-                for r in sub.itertuples():
-                    ax.plot(
-                        [i, i + 1],
-                        [r[1], r[2]],
-                        linewidth=r[3] * ((50 / len(means)) * linewidth),
-                        color=l_c,
-                        zorder=l_zorder,
-                        solid_capstyle=solid_capstyle,
-                        **line_style,
+                if (i+1>k_range[-1]):
+                    continue
+                if stratify_by_k is None:
+                    sub = (
+                        means.groupby([i, i + 1]).count().reset_index()
+                        if self._backend in ["sklearn", "scipy"]
+                        else means.groupby([i, i + 1]).count().reset_index().to_pandas()
                     )
+                else:
+                    # make sure that the label is either possible to look up or is included in the groupby.
+                    sub = means.groupby(
+                        [i, i+1, 'label_strata']
+                    ).count().iloc[:,0].rename('count_strata').reset_index()
+                    sub = sub.merge(
+                        sub.groupby(
+                            i
+                        ).count_strata.sum().rename('count_head'),
+                        left_on=i, right_index=True
+                    ).merge(
+                        sub.groupby(
+                            i+1
+                        ).count_strata.sum().rename('count_tail'),
+                        left_on=i+1, right_index=True
+                    )
+                last_head = last_tail = np.nan
+                head_offset = tail_offset = 0
+                for r in sub.itertuples():
+                    _, y_head, y_tail, *rest, count_tail = r
+                    if stratify_by_k is None:
+                        ax.plot(
+                            [i, i + 1],
+                            [y_head, y_tail],
+                            linewidth=count_tail * (50/len(means)) * linewidth,
+                            color=l_c,
+                            zorder=l_zorder,
+                            solid_capstyle=solid_capstyle,
+                            **line_style,
+                        )
+                    else:
+                        label_strata, count_strata, count_head = rest
+                        # fraction of head links that are this strata
+                        frac_strata_in_head = count_strata/count_head
+                        # when we change head/tail, we need to reset
+                        # the offset where parallelograms are
+                        # started/ended. For the head, this resets
+                        # the lower-left of the parallelogram; for
+                        # the tail, this is the lower right of the parallelogram
+                        head_width = (linewidth_dy * (count_head / len(means)))
+                        tail_width = (linewidth_dy * (count_tail / len(means)))
+                        if y_head != last_head:
+                            head_offset = head_width / 2
+                        if y_tail != last_tail:
+                            tail_offset = tail_width / 2
 
+                        l_ci = color_lut.get(
+                            label_strata, l_c
+                        )
+                        pgram_height = frac_strata_in_head * head_width
+                        lower_left = y_head - head_offset
+                        upper_left = y_head - head_offset + pgram_height
+                        lower_right = y_tail - tail_offset
+                        upper_right = y_tail - tail_offset + pgram_height
+                        ax.fill_between(
+                            [i, i+1],
+                            [lower_left, lower_right],
+                            [upper_left, upper_right],
+                            color=l_ci,
+                            edgecolor='none',
+                            linewidth=0
+                        )
+                        # since offset is subtracted, we need to move "up" by
+                        # decrementing the offset
+                        head_offset -= pgram_height
+                        tail_offset -= pgram_height
+                        last_head = y_head
+                        last_tail = y_tail
         # restrict ticks to integer values only
         x_axis = ax.get_xaxis()
         x_axis.set_major_locator(MaxNLocator(integer=True))

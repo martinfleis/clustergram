@@ -420,6 +420,46 @@ def test_hierarchical_array():
     assert clustergram.labels.notna().all().all()
 
 
+def test_hierarchical_tied_distances_and_repeated_fit():
+    tied_data = np.array([[0.0], [0.0], [1.0], [1.0]])
+    clustergram = Clustergram(
+        range(1, 5), method="hierarchical", linkage="complete", verbose=False
+    )
+
+    clustergram.fit(tied_data)
+    assert [clustergram.labels[k].nunique() for k in range(1, 5)] == [1, 2, 3, 4]
+    assert clustergram.kwargs == {"linkage": "complete"}
+
+    clustergram.fit(tied_data)
+    assert clustergram.kwargs == {"linkage": "complete"}
+
+
+def test_hierarchical_rejects_k_larger_than_sample():
+    with pytest.raises(ValueError, match="between 1 and the number of observations"):
+        Clustergram([4], method="hierarchical", verbose=False).fit(
+            np.array([[0.0], [1.0], [2.0]])
+        )
+
+
+def test_plot_does_not_mutate_style_or_pca_kwargs():
+    clustergram = Clustergram(
+        range(1, 3), backend="sklearn", random_state=random_state, n_init=10
+    ).fit(data)
+    cluster_style = {"color": "blue", "linewidth": 1}
+    line_style = {"color": "gray", "solid_capstyle": "round"}
+    pca_kwargs = {"random_state": random_state}
+
+    clustergram.plot(
+        cluster_style=cluster_style,
+        line_style=line_style,
+        pca_kwargs=pca_kwargs,
+    )
+
+    assert cluster_style == {"color": "blue", "linewidth": 1}
+    assert line_style == {"color": "gray", "solid_capstyle": "round"}
+    assert pca_kwargs == {"random_state": random_state}
+
+
 def test_errors():
     with pytest.raises(ValueError):
         Clustergram(range(1, 3), backend="nonsense").fit(data)

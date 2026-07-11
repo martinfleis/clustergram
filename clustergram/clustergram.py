@@ -347,24 +347,27 @@ class Clustergram:
         except ImportError as e:
             raise ImportError("scipy is required to use `scipy` backend.") from e
 
-        method = self.kwargs.pop("linkage", "single")
-        self.linkage = hierarchy.linkage(data, method=method, **self.kwargs)
-        rootnode, nodelist = hierarchy.to_tree(self.linkage, rd=True)
-        distances = [node.dist for node in nodelist if node.dist > 0][::-1]
+        linkage_kwargs = self.kwargs.copy()
+        method = linkage_kwargs.pop("linkage", "single")
+        self.linkage = hierarchy.linkage(data, method=method, **linkage_kwargs)
 
         self.labels = pd.DataFrame()
         self.cluster_centers = {}
 
         if self.k_range is None:
-            self.k_range = range(1, len(distances) + 1)
+            self.k_range = range(1, len(data))
 
         if not isinstance(data, pd.DataFrame):
             data = pd.DataFrame(data)
 
         for i in self.k_range:
-            d = distances[i - 1]
-            lab = hierarchy.fcluster(self.linkage, d, criterion="distance")
-            self.labels[i] = lab - 1
+            if not 1 <= i <= len(data):
+                raise ValueError(
+                    "Values in 'k_range' must be between 1 and the number of "
+                    "observations for hierarchical clustering."
+                )
+            lab = hierarchy.cut_tree(self.linkage, n_clusters=i).ravel()
+            self.labels[i] = lab
             self.cluster_centers[i] = data.groupby(lab).mean().values
 
     @classmethod
@@ -750,7 +753,7 @@ class Clustergram:
             for n in self.k_range:
                 means = self.cluster_centers[n].dot(self.pca.components_[n_pca - 1])
                 self.plot_data_pca[n_pca][n] = np.take(means, self.labels[n].values)
-                self._link_pca[n_pca][n] = dict(zip(means, range(n)))
+                self._link_pca[n_pca][n] = dict(zip(means, range(n), strict=True))
 
     def _compute_means_sklearn(self):
         """Compute cluster mean values using sklearn backend."""
@@ -759,7 +762,7 @@ class Clustergram:
         for n in self.k_range:
             means = np.mean(self.cluster_centers[n], axis=1)
             self.plot_data[n] = np.take(means, self.labels[n].values)
-            self.link[n] = dict(zip(means, range(n)))
+            self.link[n] = dict(zip(means, range(n), strict=True))
 
     def _compute_pca_means_cuml(self, **pca_kwargs):
         """Compute PCA weighted cluster mean values using cuML backend."""
@@ -784,7 +787,9 @@ class Clustergram:
                 self.plot_data_pca[n_pca][n] = cp.take(
                     means, self.labels[n].values.get()
                 )
-                self._link_pca[n_pca][n] = dict(zip(means.tolist(), range(n)))
+                self._link_pca[n_pca][n] = dict(
+                    zip(means.tolist(), range(n), strict=True)
+                )
 
     def _compute_means_cuml(self):
         """Compute cluster mean values using cuML backend."""
@@ -796,10 +801,10 @@ class Clustergram:
             means = self.cluster_centers[n].mean(axis=1)
             if isinstance(means, (cp.ndarray, np.ndarray)):
                 self.plot_data[n] = means.take(self.labels[n].values)
-                self.link[n] = dict(zip(means.tolist(), range(n)))
+                self.link[n] = dict(zip(means.tolist(), range(n), strict=True))
             else:
                 self.plot_data[n] = means.take(self.labels[n].values).to_numpy()
-                self.link[n] = dict(zip(means.values.tolist(), range(n)))
+                self.link[n] = dict(zip(means.values.tolist(), range(n), strict=True))
 
     def _compute_means(self, pca_weighted, pca_kwargs):
         if pca_weighted:
@@ -824,7 +829,7 @@ class Clustergram:
         figsize=None,
         k_range=None,
         pca_weighted=True,
-        pca_kwargs={},
+        pca_kwargs=None,
         pca_component=1,
     ):
         """
@@ -855,7 +860,7 @@ class Clustergram:
         pca_weighted : bool (default True)
             Whether use PCA weighted mean of clusters or standard mean of clusters on
             y-axis.
-        pca_kwargs : dict (default {})
+        pca_kwargs : dict (default None)
             Additional arguments passed to the PCA object,
             e.g. ``svd_solver``. Applies only if ``pca_weighted=True``.
         pca_component : int (default 1)
@@ -884,6 +889,7 @@ class Clustergram:
         """
         from matplotlib.ticker import MaxNLocator
 
+        pca_kwargs = {} if pca_kwargs is None else pca_kwargs.copy()
         pca_kwargs["n_components"] = pca_component
         self._compute_means(pca_weighted, pca_kwargs)
 
@@ -892,15 +898,13 @@ class Clustergram:
 
             fig, ax = plt.subplots(figsize=figsize)
 
-        if cluster_style is None:
-            cluster_style = {}
+        cluster_style = {} if cluster_style is None else cluster_style.copy()
         cl_c = cluster_style.pop("color", "r")
         cl_ec = cluster_style.pop("edgecolor", "w")
         cl_lw = cluster_style.pop("linewidth", 2)
         cl_zorder = cluster_style.pop("zorder", 2)
 
-        if line_style is None:
-            line_style = {}
+        line_style = {} if line_style is None else line_style.copy()
         l_c = line_style.pop("color", "k")
         l_zorder = line_style.pop("zorder", 1)
         solid_capstyle = line_style.pop("solid_capstyle", "butt")
@@ -944,9 +948,12 @@ class Clustergram:
 
             with contextlib.suppress(KeyError, ValueError):
                 sub = (
-                    means.groupby([i, i + 1]).count().reset_index()
+                    means.groupby([i, i + 1]).size().reset_index(name="count")
                     if self._backend in ["sklearn", "scipy"]
-                    else means.groupby([i, i + 1]).count().reset_index().to_pandas()
+                    else means.groupby([i, i + 1])
+                    .size()
+                    .reset_index(name="count")
+                    .to_pandas()
                 )
                 for r in sub.itertuples():
                     ax.plot(
@@ -974,7 +981,7 @@ class Clustergram:
         line_style=None,
         figsize=None,
         pca_weighted=True,
-        pca_kwargs={},
+        pca_kwargs=None,
         pca_component=1,
     ):
         """
@@ -1005,7 +1012,7 @@ class Clustergram:
         pca_weighted : bool (default True)
             Whether use PCA weighted mean of clusters or standard mean of clusters on
             y-axis.
-        pca_kwargs : dict (default {})
+        pca_kwargs : dict (default None)
             Additional arguments passed to the PCA object,
             e.g. ``svd_solver``. Applies only if ``pca_weighted=True``.
         pca_component : int (default 1)
@@ -1053,6 +1060,7 @@ class Clustergram:
                 "'bokeh' is required to use bokeh plotting backend."
             ) from e
 
+        pca_kwargs = {} if pca_kwargs is None else pca_kwargs.copy()
         pca_kwargs["n_components"] = pca_component
         self._compute_means(pca_weighted, pca_kwargs)
 
@@ -1075,14 +1083,12 @@ class Clustergram:
                 y_axis_label=ylabel,
             )
 
-        if cluster_style is None:
-            cluster_style = {}
+        cluster_style = {} if cluster_style is None else cluster_style.copy()
         cl_c = cluster_style.pop("color", "red")
         cl_ec = cluster_style.pop("line_color", "white")
         cl_lw = cluster_style.pop("line_width", 2)
 
-        if line_style is None:
-            line_style = {}
+        line_style = {} if line_style is None else line_style.copy()
         l_c = line_style.pop("color", "black")
         line_cap = line_style.pop("line_cap", "round")
 
@@ -1122,7 +1128,7 @@ class Clustergram:
         stop = max(self.k_range)
         for i in self.k_range:
             if i < stop:
-                sub = means.groupby([i, i + 1]).count().reset_index()
+                sub = means.groupby([i, i + 1]).size().reset_index(name="count")
                 if self._backend == "cuML":
                     sub = sub.to_pandas()
                 for r in sub.itertuples():

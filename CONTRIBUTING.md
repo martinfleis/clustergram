@@ -164,7 +164,7 @@ When submitting a pull request:
 - Follow PEP 8 when possible. We use ``Black`` and ``Ruff`` to ensure a consistent code
   format throughout the project. Both are included in the ``pre-commit`` hook and will
   be checked on every PR.
-- `clustergram` supports Python 3.8+ only. When possible, do not introduce additional
+- When possible, do not introduce additional
   dependencies. If that is necessary, make sure they can be treated as optional.
 
 ## Attribution

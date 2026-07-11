@@ -11,17 +11,25 @@ authors = [
     { name = "Martin Fleischmann", email = "martin@martinfleischmann.net" },
 ]
 maintainers = [{ name = "Martin Fleischmann" }]
-license = { text = "MIT" }
+license = "MIT"
 description = "Clustergram - visualization and diagnostics for cluster analysis"
-readme = "Readme.md"
+readme = "README.md"
 classifiers = [
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = ["pandas", "numpy", "matplotlib"]
+
+[project.optional-dependencies]
+all = ["bokeh", "scikit-learn", "scipy"]
+test = ["bokeh", "pytest", "scikit-learn", "scipy"]
 
 [project.urls]
 Home = "https://clustergram.readthedocs.io"
@@ -46,4 +54,3 @@ exclude = ["doc"]
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "N", "B", "A", "C4", "SIM", "ARG"]
 ignore = ["B006"]
-

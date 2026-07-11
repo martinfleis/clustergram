@@ -10,5 +10,5 @@ dependencies:
   - pandas
   - numpy
   - matplotlib
-  - bokeh==2.4
+  - bokeh
   - ruff

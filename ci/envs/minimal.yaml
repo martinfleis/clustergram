@@ -2,8 +2,8 @@ name: test
 channels:
   - conda-forge
 dependencies:
-  - python==3.10
-  - scikit-learn==1.2
+  - python==3.13
+  - scikit-learn==1.6
   - pytest
   - pytest-cov
   - codecov
